@@ -1,0 +1,12 @@
+<div class="csv-import-container">
+  <h2>等級マスタCSVインポート</h2>
+  <input type="file" accept=".csv" (change)="onFileSelected($event)" [disabled]="loading" />
+  <div *ngIf="loading">インポート中...</div>
+  <div *ngIf="message">{{ message }}</div>
+  <div class="sample-info">
+    <p>CSV例：</p>
+    <pre>year,insurance_type,grade,lower_limit,upper_limit,standard_monthly
+2024,health,1,58000,63000,60500</pre>
+  </div>
+  <button class="back-btn" routerLink="/home">ホームに戻る</button>
+</div> 
