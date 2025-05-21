@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { getFirestore, collection, addDoc } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 
 @Component({
   selector: 'app-master-csv-import',
@@ -14,15 +14,23 @@ import { RouterLink } from '@angular/router';
 export class MasterCsvImportComponent {
   message = '';
   loading = false;
+  selectedFile: File | null = null;
 
-  async onFileSelected(event: Event) {
+  constructor(private router: Router) {}
+
+  onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
-    const file = input.files[0];
+    this.selectedFile = input.files[0];
+    this.message = '';
+  }
+
+  async importCsv() {
+    if (!this.selectedFile) return;
     this.loading = true;
     this.message = '';
     try {
-      const text = await file.text();
+      const text = await this.selectedFile.text();
       const rows = text.split(/\r?\n/).filter(r => r.trim().length > 0);
       const headers = rows[0].split(',').map(h => h.trim());
       const db = getFirestore();
@@ -68,7 +76,10 @@ export class MasterCsvImportComponent {
         });
         await addDoc(collection(db, 'insuranceRates'), data);
       }
-      this.message = 'インポートが完了しました。';
+      this.message = 'インポートが完了しました。3秒後にホームに戻ります。';
+      setTimeout(() => {
+        this.router.navigate(['/home']);
+      }, 3000);
     } catch (e) {
       this.message = 'インポート中にエラーが発生しました。';
     }

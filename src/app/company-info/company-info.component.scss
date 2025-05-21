@@ -1,0 +1,147 @@
+.company-info-container {
+  max-width: 700px;
+  margin: 2.5rem auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(80, 80, 160, 0.10);
+  padding: 2.5rem 2rem;
+}
+.company-info-container h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  color: #4a3aff;
+  letter-spacing: 0.04em;
+}
+.company-form {
+  background: linear-gradient(120deg, #f7f7fa 80%, #e9e7ff 100%);
+  border-radius: 16px;
+  padding: 2rem 1.5rem 2.2rem 1.5rem;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 2px 12px rgba(80, 80, 160, 0.07);
+  border: 1.5px solid #ecebff;
+}
+.form-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem 2.2rem;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 210px;
+  flex: 1 1 220px;
+  margin-bottom: 0.5rem;
+}
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 0.18rem;
+  font-size: 1.01rem;
+  color: #3a3a5a;
+  letter-spacing: 0.01em;
+}
+.form-group .required {
+  color: #e74c3c;
+  font-size: 0.97em;
+  margin-left: 0.2em;
+}
+.form-group small {
+  color: #8a8ab3;
+  font-size: 0.85em;
+  margin-top: 0.1em;
+}
+.form-fields input,
+.form-fields select,
+.form-fields textarea {
+  padding: 0.55rem 0.9rem;
+  border: 1.5px solid #d6d6f7;
+  border-radius: 8px;
+  font-size: 1.04rem;
+  background: #fff;
+  transition: border 0.2s, box-shadow 0.2s;
+  margin-bottom: 0.1rem;
+  box-shadow: 0 1px 2px rgba(80,80,160,0.03);
+}
+.form-fields input:focus,
+.form-fields select:focus,
+.form-fields textarea:focus {
+  border: 1.5px solid #4a3aff;
+  outline: none;
+  box-shadow: 0 0 0 2px #e0e0ff;
+}
+.form-fields input:hover,
+.form-fields select:hover,
+.form-fields textarea:hover {
+  border: 1.5px solid #a9a6f9;
+}
+.save-btn {
+  margin-top: 1.5rem;
+  background: linear-gradient(90deg, #4a3aff 60%, #7d7be6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem 2.2rem;
+  font-size: 1.08rem;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(80,80,160,0.10);
+  transition: background 0.2s, box-shadow 0.2s;
+  letter-spacing: 0.04em;
+}
+.save-btn:hover {
+  background: linear-gradient(90deg, #3a2aff 60%, #5a48fa 100%);
+  box-shadow: 0 4px 16px rgba(80,80,160,0.13);
+}
+.save-message {
+  margin-left: 1.5rem;
+  color: #5a48fa;
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+.back-btn {
+  margin-bottom: 1.5rem;
+  background: linear-gradient(90deg, #a9a6f9 60%, #4a3aff 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.7rem;
+  font-size: 1.05rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: inline-block;
+  box-shadow: 0 1px 4px rgba(80,80,160,0.07);
+}
+.back-btn:hover {
+  background: linear-gradient(90deg, #7d7be6 60%, #4a3aff 100%);
+}
+.tab-bar {
+  display: flex;
+  gap: 1.2rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #ecebff;
+}
+.tab-bar button {
+  background: none;
+  border: none;
+  font-size: 1.08rem;
+  font-weight: bold;
+  color: #888;
+  padding: 0.7rem 1.5rem 0.6rem 1.5rem;
+  border-radius: 8px 8px 0 0;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+  position: relative;
+}
+.tab-bar button.active {
+  color: #4a3aff;
+  background: #ecebff;
+  border-bottom: 2px solid #4a3aff;
+  z-index: 2;
+}
+.tab-content {
+  background: #fff;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 2px 12px rgba(80, 80, 160, 0.07);
+  padding: 2rem 1.5rem 2.2rem 1.5rem;
+  min-height: 300px;
+} 

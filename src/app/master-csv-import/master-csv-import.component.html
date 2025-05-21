@@ -1,0 +1,15 @@
+<div class="csv-import-container">
+  <button class="back-btn" routerLink="/home">ホームに戻る</button>
+  <h2>保険料率マスタCSVインポート</h2>
+  <input type="file" (change)="onFileSelected($event)" accept=".csv" />
+  <button class="import-btn" (click)="importCsv()" [disabled]="!selectedFile || loading">インポートする</button>
+  <span class="import-message">{{message}}</span>
+  <div *ngIf="loading">インポート中...</div>
+  <div class="sample-info">
+    <p>CSV例：</p>
+    <pre>year,prefecture_code,prefecture_name,healthInsuranceRate,nursingCareInsuranceRate,employeesPensionInsuranceRate
+2024,13,東京都,10.00,1.80,18.30
+2024,27,大阪府,10.05,1.85,18.30</pre>
+    <p>※ 列名は日本語でもOKです。</p>
+  </div>
+</div> 

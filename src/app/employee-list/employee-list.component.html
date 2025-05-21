@@ -1,0 +1,120 @@
+<div class="employee-list-container">
+  <button class="back-btn" routerLink="/home">ホームに戻る</button>
+  <h2>従業員管理</h2>
+
+  <form class="register-form" (ngSubmit)="registerEmployee()">
+    <h3>従業員登録</h3>
+    <div class="register-fields">
+      <div class="form-group">
+        <label for="name">氏名 <span class="required">*</span></label>
+        <input id="name" type="text" placeholder="例：山田 太郎" [(ngModel)]="newEmployee.name" name="name" required />
+      </div>
+      <div class="form-group">
+        <label for="employeeNo">社員番号 <span class="required">*</span></label>
+        <input id="employeeNo" type="text" placeholder="例：A12345" [(ngModel)]="newEmployee.employeeNo" name="employeeNo" required />
+      </div>
+      <div class="form-group">
+        <label for="birth">生年月日 <span class="required">*</span></label>
+        <input id="birth" type="date" [(ngModel)]="newEmployee.birth" name="birth" required />
+        <small>例：1990-01-01</small>
+      </div>
+      <div class="form-group">
+        <label for="gender">性別</label>
+        <select id="gender" [(ngModel)]="newEmployee.gender" name="gender">
+          <option value="">選択してください</option>
+          <option>男</option>
+          <option>女</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="address">住所</label>
+        <input id="address" type="text" placeholder="例：東京都新宿区..." [(ngModel)]="newEmployee.address" name="address" />
+      </div>
+      <div class="form-group">
+        <label for="myNumber">マイナンバー</label>
+        <input id="myNumber" type="text" placeholder="例：123456789012" [(ngModel)]="newEmployee.myNumber" name="myNumber" />
+        <small>12桁の数字</small>
+      </div>
+      <div class="form-group">
+        <label for="employmentType">雇用形態</label>
+        <select id="employmentType" [(ngModel)]="newEmployee.employmentType" name="employmentType">
+          <option value="">選択してください</option>
+          <option>正社員</option>
+          <option>契約社員</option>
+          <option>パート</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="joinDate">入社日 <span class="required">*</span></label>
+        <input id="joinDate" type="date" [(ngModel)]="newEmployee.joinDate" name="joinDate" required />
+        <small>例：2023-04-01</small>
+      </div>
+      <div class="form-group">
+        <label for="leaveDate">退職日</label>
+        <input id="leaveDate" type="date" [(ngModel)]="newEmployee.leaveDate" name="leaveDate" />
+        <small>退職していない場合は空欄</small>
+      </div>
+      <div class="form-group">
+        <label for="department">部署</label>
+        <input id="department" type="text" placeholder="例：総務" [(ngModel)]="newEmployee.department" name="department" />
+      </div>
+      <div class="form-group">
+        <label for="office">事業所</label>
+        <input id="office" type="text" placeholder="例：本社" [(ngModel)]="newEmployee.office" name="office" />
+      </div>
+      <div class="form-group">
+        <label for="salary">報酬（月額・円） <span class="required">*</span></label>
+        <input id="salary" type="number" placeholder="例：300000" [(ngModel)]="newEmployee.salary" name="salary" required />
+        <small>半角数字で入力</small>
+      </div>
+      <div class="form-group">
+        <label for="bonus">賞与（年額・円）</label>
+        <input id="bonus" type="number" placeholder="例：500000" [(ngModel)]="newEmployee.bonus" name="bonus" />
+        <small>半角数字で入力</small>
+      </div>
+    </div>
+    <button type="submit" class="register-btn">登録</button>
+    <span class="register-message">{{registerMessage}}</span>
+  </form>
+
+  <form class="search-form">
+    <input type="text" placeholder="氏名・社員番号で検索" [(ngModel)]="keyword" name="keyword" />
+    <select [(ngModel)]="department" name="department">
+      <option value="">部署（全て）</option>
+      <option>総務</option>
+      <option>経理</option>
+      <option>営業</option>
+    </select>
+    <select [(ngModel)]="employmentType" name="employmentType">
+      <option value="">雇用形態（全て）</option>
+      <option>正社員</option>
+      <option>契約社員</option>
+      <option>パート</option>
+    </select>
+  </form>
+  <table class="employee-table">
+    <thead>
+      <tr>
+        <th>社員番号</th><th>氏名</th><th>生年月日</th><th>性別</th><th>住所</th><th>マイナンバー</th><th>雇用形態</th><th>入社日</th><th>退職日</th><th>部署</th><th>事業所</th><th>報酬</th><th>賞与</th><th>削除</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let e of filteredEmployees">
+        <td>{{e.employeeNo}}</td>
+        <td>{{e.name}}</td>
+        <td>{{e.birth}}</td>
+        <td>{{e.gender}}</td>
+        <td>{{e.address}}</td>
+        <td>{{e.myNumber}}</td>
+        <td>{{e.employmentType}}</td>
+        <td>{{e.joinDate}}</td>
+        <td>{{e.leaveDate}}</td>
+        <td>{{e.department}}</td>
+        <td>{{e.office}}</td>
+        <td>{{e.salary | number}}</td>
+        <td>{{e.bonus | number}}</td>
+        <td *ngIf="e.id"><button class="delete-btn" (click)="deleteEmployee(e.id, e.name)">削除</button></td>
+      </tr>
+    </tbody>
+  </table>
+</div> 
