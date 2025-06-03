@@ -1,0 +1,48 @@
+.social-insurance-status-container {
+  max-width: 1100px;
+  margin: 2.5rem auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 80, 180, 0.08);
+  font-family: 'Segoe UI', 'Meiryo', sans-serif;
+  padding: 2.5rem 2rem;
+}
+.social-insurance-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.social-insurance-table th, .social-insurance-table td {
+  border: 1px solid #e0e0e0;
+  padding: 8px 12px;
+  text-align: center;
+}
+.social-insurance-table th {
+  background: #f5f5f5;
+  font-weight: bold;
+}
+.joined {
+  color: #2196f3;
+  font-weight: bold;
+}
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+.home-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.home-btn:hover {
+  background: #1565c0;
+} 

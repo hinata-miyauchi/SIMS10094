@@ -1,7 +1,34 @@
 <div class="premium-calc-container">
-  <button class="back-btn" routerLink="/home">ホームに戻る</button>
-  <h2>従業員ごとの保険料自動算出</h2>
+  <div class="top-bar">
+    <button class="home-btn" (click)="goHome()">ホームへ戻る</button>
+  </div>
+  <h1 class="main-title">従業員ごとの保険料自動算出</h1>
+  <div class="search-bar">
+    <div class="search-group">
+      <label for="searchEmployeeNo">社員番号で検索</label>
+      <input id="searchEmployeeNo" [(ngModel)]="searchEmployeeNo" type="text" placeholder="例: 1001" autocomplete="off" />
+    </div>
+    <div class="search-group">
+      <label>給与計算年</label>
+      <select [(ngModel)]="selectedSalaryYear" (change)="updateSalaryMonth()">
+        <option *ngFor="let y of salaryYearOptions" [value]="y">{{y}}年</option>
+      </select>
+    </div>
+    <div class="search-group">
+      <label>月</label>
+      <select [(ngModel)]="selectedSalaryMonthOnly" (change)="updateSalaryMonth()">
+        <option *ngFor="let m of salaryMonthOnlyOptions" [value]="m">{{m}}月</option>
+      </select>
+    </div>
+    <button class="search-btn" (click)="searchEmployeesByNo()">検索</button>
+  </div>
   <div *ngIf="loading">読み込み中...</div>
+  <div *ngIf="noEmployeeFound" style="color: #e74c3c; margin-bottom: 8px;">
+    対象の社員はいません
+  </div>
+  <div *ngIf="salaryNotFoundMessage" style="color: #e74c3c; margin-bottom: 8px;">
+    {{salaryNotFoundMessage}}
+  </div>
   <table class="employee-table" *ngIf="!loading">
     <thead>
       <tr>
@@ -16,17 +43,24 @@
         <th>厚生年金保険料<br>（会社/個人）</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody *ngIf="!salaryNotFoundMessage">
       <tr *ngFor="let e of employees">
-        <td>{{e.employeeNo}}</td>
-        <td>{{e.name}}</td>
-        <td>{{e.salary | number}}</td>
+        <td>{{e.employee_no}}</td>
+        <td>{{e.full_name}}</td>
+        <td>{{premiumMap[e.employee_no]?.salary | number}}</td>
         <td>{{e.bonus | number}}</td>
-        <td>{{calcPremium(e).grade}}</td>
-        <td>{{calcPremium(e).standard | number}}</td>
-        <td>{{calcPremium(e).healthCompany | number}} / {{calcPremium(e).healthPersonal | number}}</td>
-        <td>{{calcPremium(e).careCompany | number}} / {{calcPremium(e).carePersonal | number}}</td>
-        <td>{{calcPremium(e).pensionCompany | number}} / {{calcPremium(e).pensionPersonal | number}}</td>
+        <td>{{premiumMap[e.employee_no]?.grade}}</td>
+        <td>{{premiumMap[e.employee_no]?.standard | number}}</td>
+        <td>{{premiumMap[e.employee_no]?.healthCompany | number:'1.1-1'}} / {{premiumMap[e.employee_no]?.healthPersonal | number:'1.1-1'}} </td>
+        <td>
+          <ng-container *ngIf="!premiumMap[e.employee_no]?.careError; else careErrorTpl">
+            {{premiumMap[e.employee_no]?.careCompany | number:'1.1-1'}} / {{premiumMap[e.employee_no]?.carePersonal | number:'1.1-1'}}
+          </ng-container>
+          <ng-template #careErrorTpl>
+            <span class="error-msg">{{premiumMap[e.employee_no]?.careError}}</span>
+          </ng-template>
+        </td>
+        <td>{{premiumMap[e.employee_no]?.pensionCompany | number:'1.2-2'}} / {{premiumMap[e.employee_no]?.pensionPersonal | number:'1.2-2'}}</td>
       </tr>
     </tbody>
   </table>

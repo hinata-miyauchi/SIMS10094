@@ -1,0 +1,86 @@
+<div class="insurance-rate-list-container">
+  <div class="top-bar">
+    <button class="home-btn" routerLink="/">ホームへ戻る</button>
+  </div>
+  <h2>保険料率一覧</h2>
+  <form class="search-form" (ngSubmit)="$event.preventDefault()">
+    <div class="search-fields">
+      <div class="search-group">
+        <label>年度
+          <select [(ngModel)]="searchYear" name="searchYear">
+            <option value="">すべて</option>
+            <option *ngFor="let y of years" [value]="y">{{y}}</option>
+          </select>
+        </label>
+        <label>都道府県名
+          <select [(ngModel)]="searchPrefecture" name="searchPrefecture">
+            <option value="">すべて</option>
+            <option *ngFor="let p of prefectures" [value]="p">{{p}}</option>
+          </select>
+        </label>
+      </div>
+      <button type="button" class="clear-btn" (click)="clearSearch()">クリア</button>
+    </div>
+  </form>
+  <table *ngIf="filteredRates.length > 0" class="insurance-table">
+    <thead>
+      <tr>
+        <th>年度</th>
+        <th>適用開始日</th>
+        <th>適用終了日</th>
+        <th>都道府県名</th>
+        <th>
+          健康保険料率<br>
+          <span class="th-sub">(合計/本人・事業主)</span>
+        </th>
+        <th>
+          介護保険料率<br>
+          <span class="th-sub">(合計/本人・事業主)</span>
+        </th>
+        <th>
+          厚生年金保険料率<br>
+          <span class="th-sub">(合計/本人・事業主)</span>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let rate of filteredRates">
+        <td>{{rate.insurance_year}}</td>
+        <td>{{rate.effective_start_date}}</td>
+        <td>{{rate.effective_end_date}}</td>
+        <td>{{rate.prefecture_name}}</td>
+        <td>
+          <span class="rate-total">{{rate.health_insurance_rate_total}}</span>
+          /
+          <span class="rate-personal">
+            {{rate.health_insurance_rate_employee}}
+            <ng-container *ngIf="rate.health_insurance_rate_employee !== rate.health_insurance_rate_employer">
+              ・{{rate.health_insurance_rate_employer}}
+            </ng-container>
+          </span>
+        </td>
+        <td>
+          <span class="rate-total">{{rate.care_insurance_rate_total}}</span>
+          /
+          <span class="rate-personal">
+            {{rate.care_insurance_rate_employee}}
+            <ng-container *ngIf="rate.care_insurance_rate_employee !== rate.care_insurance_rate_employer">
+              ・{{rate.care_insurance_rate_employer}}
+            </ng-container>
+          </span>
+        </td>
+        <td>
+          <span class="rate-total">{{rate.pension_insurance_rate_total}}</span>
+          /
+          <span class="rate-personal">
+            {{rate.pension_insurance_rate_employee}}
+            <ng-container *ngIf="rate.pension_insurance_rate_employee !== rate.pension_insurance_rate_employer">
+              ・{{rate.pension_insurance_rate_employer}}
+            </ng-container>
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div *ngIf="filteredRates.length === 0">登録済みの保険料率はありません。</div>
+</div> 

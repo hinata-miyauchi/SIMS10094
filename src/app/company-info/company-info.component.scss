@@ -1,10 +1,11 @@
 .company-info-container {
-  max-width: 700px;
-  margin: 2.5rem auto;
+  max-width: 1100px;
+  margin: 32px auto;
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(80, 80, 160, 0.10);
-  padding: 2.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 80, 180, 0.08);
+  padding: 32px 24px 24px 24px;
+  font-family: 'Segoe UI', 'Meiryo', sans-serif;
 }
 .company-info-container h2 {
   font-size: 1.5rem;
@@ -114,28 +115,51 @@
 .back-btn:hover {
   background: linear-gradient(90deg, #7d7be6 60%, #4a3aff 100%);
 }
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+.home-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.home-btn:hover {
+  background: #1565c0;
+}
 .tab-bar {
   display: flex;
-  gap: 1.2rem;
-  margin-bottom: 2rem;
-  border-bottom: 2px solid #ecebff;
+  gap: 8px;
+  margin-bottom: 24px;
 }
 .tab-bar button {
-  background: none;
+  background: linear-gradient(90deg, #e3f0fc 0%, #f0f7ff 100%);
+  color: #1976d2;
   border: none;
-  font-size: 1.08rem;
-  font-weight: bold;
-  color: #888;
-  padding: 0.7rem 1.5rem 0.6rem 1.5rem;
-  border-radius: 8px 8px 0 0;
+  border-radius: 16px 16px 0 0;
+  padding: 12px 32px;
+  font-size: 17px;
+  font-weight: 700;
   cursor: pointer;
-  transition: color 0.2s, background 0.2s;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+  margin-bottom: -2px;
+  letter-spacing: 0.5px;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
   position: relative;
+  z-index: 1;
 }
-.tab-bar button.active {
-  color: #4a3aff;
-  background: #ecebff;
-  border-bottom: 2px solid #4a3aff;
+.tab-bar button.active, .tab-bar button:hover {
+  background: linear-gradient(90deg, #1976d2 0%, #42a5f5 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(25, 118, 210, 0.18);
+  transform: translateY(-2px) scale(1.04);
   z-index: 2;
 }
 .tab-content {
@@ -144,4 +168,153 @@
   box-shadow: 0 2px 12px rgba(80, 80, 160, 0.07);
   padding: 2rem 1.5rem 2.2rem 1.5rem;
   min-height: 300px;
+}
+
+/* --- 従業員登録画面に合わせたデザイン追加 --- */
+
+.sub-tab-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.sub-tab-bar button {
+  background: linear-gradient(90deg, #e3f0fc 0%, #f0f7ff 100%);
+  color: #1976d2;
+  border: none;
+  border-radius: 16px 16px 0 0;
+  padding: 12px 32px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+  margin-bottom: -2px;
+  letter-spacing: 0.5px;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
+  position: relative;
+  z-index: 1;
+}
+.sub-tab-bar button.active, .sub-tab-bar button:hover {
+  background: linear-gradient(90deg, #1976d2 0%, #42a5f5 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(25, 118, 210, 0.18);
+  transform: translateY(-2px) scale(1.04);
+  z-index: 2;
+}
+
+.sub-tab-content {
+  background: #fff;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 2px 12px rgba(80, 80, 160, 0.07);
+  padding: 2rem 1.5rem 2.2rem 1.5rem;
+  min-height: 300px;
+}
+
+.register-btn {
+  background: #43a047;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 16px;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+.register-btn:hover:not(:disabled) {
+  background: #388e3c;
+}
+
+.form-group-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.form-group-row label {
+  min-width: 160px;
+  font-weight: 500;
+  color: #1976d2;
+  margin-right: 12px;
+}
+.form-group-row input,
+.form-group-row select {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #b3c6e0;
+  border-radius: 5px;
+  font-size: 15px;
+  background: #f7fbff;
+  transition: border 0.2s;
+}
+.form-group-row input:focus,
+.form-group-row select:focus {
+  border: 1.5px solid #1976d2;
+  outline: none;
+  background: #fff;
+}
+
+.error {
+  color: #d32f2f;
+  background: #fff3f3;
+  border: 1px solid #f8bdbd;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+h2, h3 {
+  color: #1976d2;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+/* --- 事業所追加・削除ボタンのデザイン --- */
+.add-btn {
+  background: #43a047;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(67, 160, 71, 0.08);
+  letter-spacing: 0.5px;
+}
+.add-btn:hover:not(:disabled) {
+  background: #388e3c;
+  box-shadow: 0 4px 16px rgba(67, 160, 71, 0.18);
+}
+
+.remove-btn {
+  background: #e53935;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  margin-left: 8px;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(229, 57, 53, 0.08);
+  letter-spacing: 0.3px;
+}
+.remove-btn:hover:not(:disabled) {
+  background: #b71c1c;
+  box-shadow: 0 4px 16px rgba(229, 57, 53, 0.18);
+}
+
+.main-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #6c63ff;
+  margin-bottom: 24px;
 } 

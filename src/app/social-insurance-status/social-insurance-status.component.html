@@ -1,0 +1,34 @@
+<div class="social-insurance-status-container">
+  <div class="top-bar">
+    <button class="home-btn" (click)="goHome()">ホームへ戻る</button>
+  </div>
+  <h2>社会保険加入状況一覧</h2>
+  <table class="social-insurance-table">
+    <thead>
+      <tr>
+        <th>社員番号</th>
+        <th>氏名</th>
+        <th>在籍状況</th>
+        <th>健康保険</th>
+        <th>介護保険</th>
+        <th>厚生年金</th>
+        <th>資格取得日</th>
+        <th>資格喪失日</th>
+        <th>備考</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let s of statuses">
+        <td>{{s.employeeNo}}</td>
+        <td>{{s.name}}</td>
+        <td>{{s.status}}</td>
+        <td><span [class.joined]="s.healthInsurance">{{s.healthInsurance ? '●' : '×'}}</span></td>
+        <td><span [class.joined]="s.nursingCareInsurance">{{s.nursingCareInsurance ? '●' : '×'}}</span></td>
+        <td><span [class.joined]="s.pension">{{s.pension ? '●' : '×'}}</span></td>
+        <td>{{s.acquisitionDate}}</td>
+        <td>{{s.lossDate || ''}}</td>
+        <td>{{s.remarks || ''}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div> 

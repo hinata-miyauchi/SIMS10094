@@ -17,7 +17,7 @@ export class CompanyInfoComponent implements OnInit {
     '基本情報',
     '事業所情報',
     '保険情報',
-    '保険料関連情報',
+    '給与情報',
     '担当者情報'
   ];
 
@@ -33,8 +33,11 @@ export class CompanyInfoComponent implements OnInit {
         nameKana: [''],
         companyNo: [''],
         address: [''],
-        tel: [''],
-        president: ['']
+        addressKana: [''],
+        president: [''],
+        established: [''],
+        business: [''],
+        capital: ['']
       }),
       // 事業所情報
       officesForm: this.fb.array([
@@ -43,18 +46,13 @@ export class CompanyInfoComponent implements OnInit {
       // 保険情報
       insurance: this.fb.group({
         healthType: [''],
-        healthName: [''],
-        healthCode: [''],
-        pensionStatus: [''],
-        careTarget: [''],
-        prefecture: ['']
+        pensionStatus: ['']
       }),
-      // 保険料関連情報
-      premium: this.fb.group({
-        gradeTable: [''],
-        rateSetting: [''],
-        payDay: [''],
-        bonusTiming: ['']
+      // 給与情報
+      salary: this.fb.group({
+        closingDay: [''],
+        paymentDay: [''],
+        paymentTiming: ['']
       }),
       // 担当者情報
       staff: this.fb.group({
@@ -65,7 +63,25 @@ export class CompanyInfoComponent implements OnInit {
     });
   }
 
-  ngOnInit() {}
+  async ngOnInit() {
+    // Firestoreから会社情報を取得してフォームに反映
+    const ref = doc(this.firestore, 'company', 'main');
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      const data = snap.data();
+      // officesFormの長さに合わせてFormArrayを調整
+      const offices = data['officesForm'] || [];
+      const officesFormArray = this.companyForm.get('officesForm') as FormArray;
+      // 既存のFormArrayをクリア
+      while (officesFormArray.length > 0) {
+        officesFormArray.removeAt(0);
+      }
+      // Firestoreの配列分FormGroupを追加
+      offices.forEach(() => officesFormArray.push(this.createOfficeForm()));
+      // 値を反映
+      this.companyForm.patchValue(data);
+    }
+  }
 
   get basicForm() {
     return this.companyForm.get('basic') as FormGroup;
@@ -79,8 +95,8 @@ export class CompanyInfoComponent implements OnInit {
   get insuranceForm() {
     return this.companyForm.get('insurance') as FormGroup;
   }
-  get premiumForm() {
-    return this.companyForm.get('premium') as FormGroup;
+  get salaryForm() {
+    return this.companyForm.get('salary') as FormGroup;
   }
   get staffForm() {
     return this.companyForm.get('staff') as FormGroup;
@@ -89,14 +105,10 @@ export class CompanyInfoComponent implements OnInit {
   createOfficeForm(): FormGroup {
     return this.fb.group({
       officeName: [''],
-      officeCode: [''],
       officeAddress: [''],
       applicableOfficeNo: [''],
-      nenkinOffice: [''],
-      kempoBranch: [''],
-      healthInsurerNo: [''],
-      pensionInsurerNo: [''],
-      officeType: ['']
+      officeType: [''],
+      prefecture: ['']
     });
   }
 

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { getFirestore, collection, getDocs } from '@angular/fire/firestore';
+import { Firestore, collection, getDocs } from '@angular/fire/firestore';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
@@ -8,81 +8,51 @@ import { FormsModule } from '@angular/forms';
   selector: 'app-insurance-rate-list',
   standalone: true,
   imports: [CommonModule, RouterLink, FormsModule],
-  template: `
-    <div class="insurance-rate-list-container">
-      <button class="back-btn" routerLink="/home">ホームに戻る</button>
-      <h2>保険料率一覧</h2>
-      <form class="search-form" (ngSubmit)="$event.preventDefault()">
-        <label>
-          年度：
-          <select [(ngModel)]="searchYear" name="searchYear">
-            <option value="">すべて</option>
-            <option *ngFor="let y of years" [value]="y">{{y}}</option>
-          </select>
-        </label>
-        <label>
-          都道府県名：
-          <select [(ngModel)]="searchPrefecture" name="searchPrefecture">
-            <option value="">すべて</option>
-            <option *ngFor="let p of prefectures" [value]="p">{{p}}</option>
-          </select>
-        </label>
-        <button type="button" (click)="clearSearch()">クリア</button>
-      </form>
-      <table *ngIf="filteredRates.length > 0">
-        <thead>
-          <tr>
-            <th>年度</th>
-            <th>都道府県コード</th>
-            <th>都道府県名</th>
-            <th>健康保険料率(%)</th>
-            <th>介護保険料率(%)</th>
-            <th>厚生年金保険料率(%)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let rate of filteredRates">
-            <td>{{rate.year}}</td>
-            <td>{{rate.prefecture_code}}</td>
-            <td>{{rate.prefecture_name}}</td>
-            <td>{{rate.health_insurance_rate}}</td>
-            <td>{{rate.nursing_care_insurance_rate}}</td>
-            <td>{{rate.employees_pension_insurance_rate}}</td>
-          </tr>
-        </tbody>
-      </table>
-      <div *ngIf="filteredRates.length === 0">登録済みの保険料率はありません。</div>
-    </div>
-  `,
+  templateUrl: './insurance-rate-list.component.html',
   styleUrls: ['./insurance-rate-list.component.scss']
 })
 export class InsuranceRateListComponent implements OnInit {
   insuranceRates: any[] = [];
   filteredRates: any[] = [];
-  years: string[] = [];
+  years: number[] = [];
   prefectures: string[] = [];
   searchYear: string = '';
   searchPrefecture: string = '';
 
+  constructor(private firestore: Firestore) {}
+
   async ngOnInit() {
-    const db = getFirestore();
+    const db = this.firestore;
     const snapshot = await getDocs(collection(db, 'insuranceRates'));
     this.insuranceRates = snapshot.docs.map(doc => doc.data());
     this.filteredRates = [...this.insuranceRates];
-    // 年度・都道府県名の選択肢を自動生成
-    this.years = Array.from(new Set(this.insuranceRates.map(r => r.year))).sort();
-    this.prefectures = Array.from(new Set(this.insuranceRates.map(r => r.prefecture_name))).sort();
-  }
-
-  ngOnChanges() {
-    this.filterRates();
+    // 年度の選択肢を降順で生成
+    this.years = Array.from(new Set(this.insuranceRates.map(r => Number(r.insurance_year)))).sort((a, b) => b - a);
+    // 都道府県名の選択肢を日本の正式な並び順で生成
+    const jpPrefList = [
+      '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県',
+      '茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県',
+      '新潟県','富山県','石川県','福井県','山梨県','長野県',
+      '岐阜県','静岡県','愛知県','三重県',
+      '滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県',
+      '鳥取県','島根県','岡山県','広島県','山口県',
+      '徳島県','香川県','愛媛県','高知県',
+      '福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'
+    ];
+    this.prefectures = jpPrefList.filter(p => this.insuranceRates.some(r => r.prefecture_name === p));
   }
 
   filterRates() {
     this.filteredRates = this.insuranceRates.filter(rate =>
-      (this.searchYear === '' || String(rate.year) === String(this.searchYear)) &&
+      (this.searchYear === '' || String(rate.insurance_year) === String(this.searchYear)) &&
       (this.searchPrefecture === '' || rate.prefecture_name === this.searchPrefecture)
-    );
+    ).sort((a, b) => {
+      // 年度の降順
+      const yearDiff = Number(b.insurance_year) - Number(a.insurance_year);
+      if (yearDiff !== 0) return yearDiff;
+      // 年度が同じ場合は都道府県コードの昇順
+      return String(a.jis_prefecture_code).localeCompare(String(b.jis_prefecture_code), 'ja', {numeric: true});
+    });
   }
 
   clearSearch() {
@@ -91,7 +61,6 @@ export class InsuranceRateListComponent implements OnInit {
     this.filterRates();
   }
 
-  // 検索条件が変わったら都度フィルタリング
   ngDoCheck() {
     this.filterRates();
   }

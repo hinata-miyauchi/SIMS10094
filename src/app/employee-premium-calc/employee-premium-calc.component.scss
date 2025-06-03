@@ -2,9 +2,10 @@
   max-width: 1100px;
   margin: 2.5rem auto;
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(80, 80, 160, 0.10);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 80, 180, 0.08);
   padding: 2.5rem 2rem;
+  font-family: 'Segoe UI', 'Meiryo', sans-serif;
 }
 .premium-calc-container h2 {
   font-size: 1.5rem;
@@ -15,44 +16,109 @@
 .employee-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.98rem;
   background: #fff;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 1px 6px rgba(80,80,160,0.04);
+  font-size: 15px;
+  min-width: 700px;
+  box-shadow: 0 2px 8px rgba(0,80,180,0.04);
 }
 .employee-table th, .employee-table td {
-  padding: 0.6rem 0.5rem;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 10px 14px;
+  border-bottom: 1px solid #e3f0fc;
   text-align: left;
 }
 .employee-table th {
-  background: #f7f7fa;
-  font-weight: bold;
-  color: #4a3aff;
-  letter-spacing: 0.02em;
+  background: #e3f0fc;
+  color: #1976d2;
+  font-weight: 700;
+  font-size: 15px;
+  border-top: 2px solid #1976d2;
 }
 .employee-table tr:last-child td {
   border-bottom: none;
+}
+.employee-table tbody tr:hover {
+  background: #f0f7ff;
+  transition: background 0.2s;
 }
 .calc-placeholder {
   color: #aaa;
   font-size: 0.97rem;
 }
-.back-btn {
-  margin-bottom: 1.5rem;
-  background: linear-gradient(90deg, #a9a6f9 60%, #4a3aff 100%);
+.search-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  background: #f8f9fa;
+  padding: 18px 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin-bottom: 24px;
+}
+.search-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.search-group label {
+  font-size: 0.95em;
+  color: #666;
+  margin-bottom: 2px;
+}
+.search-group input,
+.search-group select {
+  padding: 7px 12px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font-size: 1em;
+  min-width: 120px;
+  background: #fff;
+  transition: border 0.2s;
+}
+.search-group input:focus,
+.search-group select:focus {
+  border-color: #4a90e2;
+  outline: none;
+}
+.search-btn {
+  padding: 8px 22px;
+  background: #4a90e2;
   color: #fff;
   border: none;
-  border-radius: 8px;
-  padding: 0.7rem 1.7rem;
-  font-size: 1.05rem;
+  border-radius: 6px;
+  font-size: 1.05em;
   font-weight: bold;
   cursor: pointer;
   transition: background 0.2s;
-  display: inline-block;
-  box-shadow: 0 1px 4px rgba(80,80,160,0.07);
+  margin-top: 18px;
 }
-.back-btn:hover {
-  background: linear-gradient(90deg, #7d7be6 60%, #4a3aff 100%);
+.search-btn:hover {
+  background: #357abd;
+}
+.salary-month {
+  /* 必要に応じて幅や余白を調整 */
+}
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+.home-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.home-btn:hover {
+  background: #1565c0;
+} 
+.main-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #6c63ff;
+  margin-bottom: 24px;
 } 
