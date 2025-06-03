@@ -88,6 +88,8 @@ export class EmployeeListComponent implements OnInit {
   public importResult: string = '';
   public formErrorMessage: string = '';
   public officeNameList: string[] = [];
+  public loading: boolean = false;
+  private clearMessageListener: (() => void) | null = null;
 
   constructor(
     private router: Router
@@ -225,14 +227,14 @@ export class EmployeeListComponent implements OnInit {
     onlyAlnumHyphenFields.forEach(field => {
       if (employee[field] && !/^[A-Za-z0-9\-]+$/.test(employee[field])) errors.push(`${this.fieldNameToLabel(field)}は半角英数字とハイフンのみ入力してください`);
     });
-    if (employee.has_overseas === 'あり') {
+    if (employee.has_overseas === 'あり' || employee.has_overseas === true || employee.has_overseas === 'true') {
       if (!employee.overseas_employment_type) errors.push('海外勤務時の雇用形態がありません');
       if (!employee.overseas_assignment_start) errors.push('赴任開始日がありません');
       if (employee.overseas_employment_type === '日本法人雇用') {
         if (!employee.is_social_security_agreement) errors.push('社会保障協定国であるかがありません');
       }
     }
-    if (employee.status === '退職') {
+    if (employee.status === '退職' || employee.status === true || employee.status === 'true') {
       if (!employee.retirement_date) errors.push('退社年月日がありません');
     }
     return errors;
@@ -247,10 +249,12 @@ export class EmployeeListComponent implements OnInit {
 
   async importCSV() {
     if (!this.selectedCSVFile) return;
+    this.loading = true;
     const text = await this.selectedCSVFile.text();
     const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
     if (lines.length < 2) {
       this.importResult = 'CSVにデータがありません。';
+      this.loading = false;
       return;
     }
     const headers = lines[0].split(',');
@@ -304,6 +308,7 @@ export class EmployeeListComponent implements OnInit {
       this.importResult = `インポート完了：${success}件成功、${fail}件失敗`;
     }
     this.selectedCSVFile = null;
+    this.loading = false;
   }
 
   onRegisterOrUpdate() {
@@ -336,6 +341,17 @@ export class EmployeeListComponent implements OnInit {
     setDoc(doc(db, 'employees', employee.employee_no), employee)
       .then(() => {
         this.formErrorMessage = '登録が完了しました。';
+        this.setupAutoClearMessage();
+        // フォーム内容を初期化
+        this.basicForm = {
+          last_name: '', first_name: '', last_name_kana: '', first_name_kana: '', birth_date: '', gender: '', my_number: '', nationality: '', has_dependents: '', has_disability: '', has_overseas: '', overseas_employment_type: '', is_social_security_agreement: '', overseas_assignment_start: '', overseas_assignment_end: ''
+        };
+        this.employmentForm = { status: '', hire_date: '', retirement_date: '' };
+        this.workForm = { employee_no: '', office: '', employment_type: '', scheduled_working_hours: '', expected_monthly_income: '', employment_expectation: '' };
+        this.contactForm = { address: '', phone_number: '' };
+        this.insuranceForm = { health_insurance_no: '', pension_insurance_no: '', basic_pension_no: '', qualification_acquisition_date: '', qualification_loss_date: '' };
+        this.selectedEmploymentTypeMain = '';
+        this.selectedEmploymentTypeDetail = '';
       })
       .catch(() => {
         this.formErrorMessage = 'Firestoreへの登録に失敗しました。';
@@ -357,5 +373,26 @@ export class EmployeeListComponent implements OnInit {
 
   goHome() {
     this.router.navigate(['/']);
+  }
+
+  clearMessage() {
+    if (this.formErrorMessage) {
+      this.formErrorMessage = '';
+    }
+  }
+
+  private setupAutoClearMessage() {
+    if (this.clearMessageListener) return;
+    const clear = () => {
+      this.formErrorMessage = '';
+      window.removeEventListener('click', clear, true);
+      window.removeEventListener('focusin', clear, true);
+      window.removeEventListener('keydown', clear, true);
+      this.clearMessageListener = null;
+    };
+    window.addEventListener('click', clear, true);
+    window.addEventListener('focusin', clear, true);
+    window.addEventListener('keydown', clear, true);
+    this.clearMessageListener = clear;
   }
 }

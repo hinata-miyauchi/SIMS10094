@@ -254,3 +254,86 @@ h2, h3 {
   color: #6c63ff;
   margin-bottom: 24px;
 }
+
+.import-csv-section.modern {
+  margin-top: 24px;
+  background: #fafaff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(80,80,160,0.08);
+  padding: 32px 24px 24px 24px;
+  max-width: 700px;
+}
+.import-csv-bar.modern {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.file-label {
+  display: inline-block;
+  background: #ececff;
+  color: #4a4ae6;
+  font-weight: bold;
+  border-radius: 12px;
+  padding: 10px 28px;
+  font-size: 1.05rem;
+  margin-right: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  border: 2px solid #ececff;
+  transition: background 0.2s, color 0.2s;
+}
+.file-label:hover {
+  background: #d6d6ff;
+  color: #222;
+}
+input[type="file"] {
+  display: none;
+}
+.selected-file-name.modern {
+  font-size: 1em;
+  color: #444;
+  margin-right: 10px;
+}
+.import-btn.modern, .sample-info.modern button {
+  background: linear-gradient(90deg, #a8a8ff 0%, #4a4ae6 100%);
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 28px;
+  font-size: 1.05rem;
+  margin-right: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: filter 0.2s;
+  box-shadow: 0 2px 8px rgba(80,80,160,0.08);
+}
+.import-btn.modern:disabled, .sample-info.modern button:disabled {
+  background: #ccc;
+  color: #fff;
+  cursor: not-allowed;
+}
+.import-btn.modern:hover:not(:disabled), .sample-info.modern button:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+.import-message.modern {
+  margin-left: 18px;
+  color: #4a4ae6;
+  font-weight: bold;
+}
+.sample-info.modern {
+  margin-top: 24px;
+  background: #f5f5ff;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 0.98em;
+}
+
+.import-csv-outer {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 400px;
+  width: 100%;
+}
