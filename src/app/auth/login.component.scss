@@ -108,4 +108,32 @@ input[type="text"] {
   h1 {
     font-size: 1.3rem;
   }
+}
+
+.admin-btn-bar {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  z-index: 10;
+}
+.admin-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+}
+.admin-btn:hover {
+  background: #1565c0;
+}
+@media (max-width: 600px) {
+  .admin-btn {
+    padding: 10px 12px;
+    font-size: 1rem;
+  }
 } 

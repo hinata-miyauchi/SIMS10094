@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { Firestore, collection, getDocs, addDoc, doc, setDoc } from '@angular/fire/firestore';
+import { Auth } from '@angular/fire/auth';
+import { query, where } from '@angular/fire/firestore';
 
 interface Employee {
   id: string;
@@ -46,7 +48,7 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
     });
   }
 
-  constructor(private fb: FormBuilder, private firestore: Firestore) {
+  constructor(private fb: FormBuilder, private firestore: Firestore, private auth: Auth) {
     this.salaryForm = this.fb.group({
       employeeNo: ['', Validators.required],
       fullName: [''],
@@ -84,8 +86,11 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Firestoreから給与データを取得
-    const salarySnap = await getDocs(collection(this.firestore, 'salaries'));
+    // Firestoreからuidが一致する給与データを取得
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) return;
+    const q = query(collection(this.firestore, 'salaries'), where('uid', '==', uid));
+    const salarySnap = await getDocs(q);
     this.salaryList = salarySnap.docs.map(doc => {
       const data = doc.data();
       return {
@@ -104,6 +109,8 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
   async onSubmit() {
     if (this.salaryForm.valid) {
       const formValue = this.salaryForm.value;
+      const uid = this.auth.currentUser?.uid;
+      if (!uid) return;
       const data = {
         employee_no: formValue.employeeNo,
         full_name: formValue.fullName,
@@ -112,7 +119,8 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
         work_hours: formValue.workHours,
         salary: formValue.salary,
         has_bonus: formValue.hasBonus,
-        bonus: formValue.bonus
+        bonus: formValue.bonus,
+        uid
       };
       const docId = `${formValue.employeeNo}_${formValue.salaryMonth}`;
       try {

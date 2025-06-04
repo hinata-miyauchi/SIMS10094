@@ -9,6 +9,10 @@ import { EmployeePremiumCalcComponent } from './employee-premium-calc/employee-p
 import { SalaryManagementComponent } from './salary-management/salary-management.component';
 import { InsuranceRateListComponent } from './insurance-rate-list/insurance-rate-list.component';
 import { SocialInsuranceStatusComponent } from './social-insurance-status/social-insurance-status.component';
+import { AdminComponent } from './admin/admin.component';
+import { InsuranceRateGradeComponent } from './admin/insurance-rate-grade/insurance-rate-grade.component';
+import { AccountCreateComponent } from './admin/account-create/account-create.component';
+import { AdminAuthComponent } from './admin-auth/admin-auth.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -21,6 +25,10 @@ export const routes: Routes = [
   { path: 'salary-management', component: SalaryManagementComponent },
   { path: 'insurance-rate-list', component: InsuranceRateListComponent },
   { path: 'social-insurance-status', component: SocialInsuranceStatusComponent },
+  { path: 'admin', component: AdminComponent },
+  { path: 'admin/insurance-rate-grade', component: InsuranceRateGradeComponent },
+  { path: 'admin/account-create', component: AccountCreateComponent },
+  { path: 'admin-auth', component: AdminAuthComponent },
   { path: 'leave-management', loadComponent: () => import('./leave-management/leave-management.component').then(m => m.LeaveManagementComponent) },
   { path: '', redirectTo: 'home', pathMatch: 'full' },
 ];

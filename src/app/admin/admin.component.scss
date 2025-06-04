@@ -1,0 +1,116 @@
+.home-container {
+  max-width: 1100px;
+  margin: 32px auto;
+  padding: 24px;
+}
+
+h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #4a4ae6;
+  margin-bottom: 32px;
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 28px;
+  margin-bottom: 32px;
+}
+
+.home-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(80, 80, 160, 0.10);
+  padding: 28px 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 220px;
+  transition: box-shadow 0.2s, transform 0.2s;
+  position: relative;
+}
+.home-card:hover {
+  box-shadow: 0 8px 32px rgba(80, 80, 160, 0.18);
+  transform: translateY(-4px) scale(1.03);
+}
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a8a8ff 60%, #4a4ae6 100%);
+  color: #fff;
+  font-size: 2.6rem;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(80, 80, 160, 0.13);
+}
+.card-title {
+  font-weight: bold;
+  font-size: 1.18rem;
+  margin-bottom: 8px;
+  color: #4a4ae6;
+}
+.card-desc {
+  font-size: 1.01em;
+  color: #666;
+  margin-bottom: 18px;
+}
+.table-btn {
+  background: linear-gradient(90deg, #a8a8ff 0%, #4a4ae6 100%);
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 28px;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: filter 0.2s;
+  margin-top: auto;
+}
+.table-btn:hover {
+  filter: brightness(0.95);
+}
+.login-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.login-btn:hover {
+  background: #1565c0;
+}
+@media (max-width: 700px) {
+  .home-container {
+    padding: 8px;
+  }
+  .home-grid {
+    gap: 12px;
+  }
+  .home-card {
+    padding: 14px 6px 12px 6px;
+    min-height: 140px;
+  }
+  .icon {
+    width: 44px;
+    height: 44px;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+}
+
+.top-bar {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  z-index: 10;
+  display: flex;
+  justify-content: flex-end;
+}

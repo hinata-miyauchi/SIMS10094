@@ -97,15 +97,15 @@
                   <option value="true">あり</option>
                   <option value="false">なし</option>
                 </select>
-              </div>
-              <div class="form-group">
+      </div>
+      <div class="form-group">
                 <label>障がいの有無 <span class="required">*</span></label>
                 <select name="has_disability" [(ngModel)]="basicForm.has_disability" autocomplete="off">
                   <option value="true">あり</option>
                   <option value="false">なし</option>
                 </select>
-              </div>
-              <div class="form-group">
+      </div>
+      <div class="form-group">
                 <label>海外勤務の有無 <span class="required">*</span></label>
                 <select name="has_overseas" [(ngModel)]="basicForm.has_overseas" autocomplete="off">
                   <option value="true">あり</option>
@@ -156,15 +156,33 @@
                   <option value="在籍">在籍</option>
                   <option value="退職">退職</option>
                   <option value="休職">休職</option>
-                </select>
-              </div>
-              <div class="form-group">
+        </select>
+      </div>
+      <div class="form-group">
                 <label>入社年月日 <span class="required">*</span></label>
                 <input type="date" name="hire_date" [(ngModel)]="employmentForm.hire_date" autocomplete="off" />
               </div>
               <div class="form-group" *ngIf="employmentForm.status === '退職'">
                 <label>退社年月日 <span class="required">*</span></label>
                 <input type="date" name="retirement_date" [(ngModel)]="employmentForm.retirement_date" autocomplete="off" />
+              </div>
+              <div class="form-row" *ngIf="employmentForm.status === '休職'" style="width: 100%">
+                <div class="form-group">
+                  <label>休職開始日 <span class="required">*</span></label>
+                  <input type="date" name="leave_start" [(ngModel)]="employmentForm.leave_start" autocomplete="off" />
+                </div>
+                <div class="form-group">
+                  <label>休職終了日 <span class="required">*</span></label>
+                  <input type="date" name="leave_end" [(ngModel)]="employmentForm.leave_end" autocomplete="off" />
+      </div>
+      <div class="form-group">
+                  <label>休職理由 <span class="required">*</span></label>
+                  <select name="leave_reason" [(ngModel)]="employmentForm.leave_reason" autocomplete="off">
+                    <option value="産前産後休業">産前産後休業</option>
+                    <option value="育児休業">育児休業</option>
+                    <option value="その他休業（病気・介護など）">その他休業（病気・介護など）</option>
+                  </select>
+                </div>
               </div>
             </div>
           </form>
@@ -176,14 +194,14 @@
               <div class="form-group">
                 <label>社員番号 <span class="required">*</span></label>
                 <input type="text" name="employee_no" [(ngModel)]="workForm.employee_no" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(workForm, 'employee_no')" autocomplete="off" />
-              </div>
-              <div class="form-group">
+      </div>
+      <div class="form-group">
                 <label>所属事業所 <span class="required">*</span></label>
                 <select name="office" [(ngModel)]="workForm.office" autocomplete="off">
                   <option *ngFor="let office of officeNameList" [value]="office">{{ office }}</option>
-                </select>
-              </div>
-              <div class="form-group">
+        </select>
+      </div>
+      <div class="form-group">
                 <label>雇用形態 <span class="required">*</span></label>
                 <select [(ngModel)]="selectedEmploymentTypeMain" name="employment_type_main" autocomplete="off">
                   <option *ngFor="let type of employmentTypeMain" [value]="type">{{ type }}</option>
@@ -194,23 +212,23 @@
                 <select [(ngModel)]="selectedEmploymentTypeDetail" name="employment_type_detail" autocomplete="off">
                   <option *ngFor="let detail of employmentTypeDetail" [value]="detail">{{ detail }}</option>
                 </select>
-              </div>
-              <div class="form-group">
+      </div>
+      <div class="form-group">
                 <label>雇用見込み期間 <span class="required">*</span></label>
                 <select [(ngModel)]="workForm.employment_expectation" name="employment_expectation" autocomplete="off">
                   <option value="2か月超">2か月超</option>
                   <option value="2か月以内">2か月以内</option>
                 </select>
-              </div>
-              <div class="form-group">
+      </div>
+      <div class="form-group">
                 <label>所定労働時間（h） <span class="required">*</span>
                   <span class="tooltip-icon" tabindex="0">？
                     <span class="tooltip-text">1週間あたりの勤務時間(h)</span>
                   </span>
                 </label>
                 <input type="text" name="scheduled_working_hours" [(ngModel)]="workForm.scheduled_working_hours" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(workForm, 'scheduled_working_hours')" autocomplete="off" />
-              </div>
-              <div class="form-group">
+      </div>
+      <div class="form-group">
                 <label>見込み月収（円） <span class="required">*</span>
                   <span class="tooltip-icon" tabindex="0">？
                     <span class="tooltip-text">基本給＋毎月固定支給手当（残業手当、賞与などは含まれない）</span>
@@ -228,8 +246,8 @@
               <div class="form-group">
                 <label>現住所 <span class="required">*</span></label>
                 <input type="text" name="address" [(ngModel)]="contactForm.address" autocomplete="off" />
-              </div>
-              <div class="form-group">
+      </div>
+      <div class="form-group">
                 <label>電話番号 <span class="required">*</span></label>
                 <input type="text" name="phone_number" [(ngModel)]="contactForm.phone_number" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(contactForm, 'phone_number')" autocomplete="off" />
               </div>
@@ -288,7 +306,7 @@
       </div>
     </div>
   </div>
-</div>
+</div> 
 <app-employee-edit-modal
   [show]="editModalOpen"
   [employee]="selectedEmployee"

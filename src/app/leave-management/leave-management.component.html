@@ -18,7 +18,7 @@
         <ng-container *ngIf="leaveList.length > 0; else noData">
           <tr *ngFor="let leave of leaveList">
             <td>{{ leave.employee_no }}</td>
-            <td>{{ leave.name }}</td>
+            <td>{{ leave.full_name }}</td>
             <td>{{ leave.start }}</td>
             <td>{{ leave.end }}</td>
             <td>{{ leave.reason }}</td>

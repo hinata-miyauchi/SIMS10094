@@ -9,6 +9,10 @@ import { Router, RouterLink } from '@angular/router';
   imports: [CommonModule, RouterLink],
   template: `
   <div class='home-container'>
+    <div class="user-info-bar">
+      <span class="user-icon">👤</span>
+      <span class="user-name">{{ displayName || 'ユーザー' }}</span>
+    </div>
     <h2>ホーム（管理者向け）</h2>
     <div class="home-grid">
       <div class="home-card" *ngFor="let item of menuItems">
@@ -31,9 +35,12 @@ export class HomeComponent {
     { icon: '🏢', title: '会社情報', desc: '会社の基本情報を登録・編集', btn: '会社情報', link: '/company-info' },
     { icon: '📄', title: '保険料率一覧', desc: '登録済みの保険料率を一覧表示', btn: '保険料率一覧', link: '/insurance-rate-list' },
     { icon: '📥', title: 'マスタインポート', desc: 'CSVインポート（保険料率・等級）', btn: 'マスタCSV', link: '/master-csv-import' },
-    { icon: '🛌', title: '休職情報管理', desc: '社員の休職情報の登録・編集・一覧', btn: '休職情報管理', link: '/leave-management' }
+    { icon: '🛌', title: '休業情報管理', desc: '従業員の休業情報の登録・編集・一覧', btn: '休業管理', link: '/leave-management' }
   ];
-  constructor(private auth: Auth, private router: Router) {}
+  displayName: string | null = null;
+  constructor(private auth: Auth, private router: Router) {
+    this.displayName = this.auth.currentUser?.displayName || this.auth.currentUser?.email || null;
+  }
 
   async onLogout() {
     await signOut(this.auth);

@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { Firestore, collection, getDocs } from '@angular/fire/firestore';
+import { Firestore, collection, getDocs, query, where } from '@angular/fire/firestore';
+import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-leave-management',
@@ -13,10 +14,12 @@ import { Firestore, collection, getDocs } from '@angular/fire/firestore';
 export class LeaveManagementComponent implements OnInit {
   leaveList: any[] = [];
 
-  constructor(private firestore: Firestore) {}
+  constructor(private firestore: Firestore, private auth: Auth) {}
 
   async ngOnInit() {
-    const colRef = collection(this.firestore, 'employees');
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) return;
+    const colRef = query(collection(this.firestore, 'employees'), where('uid', '==', uid));
     const snap = await getDocs(colRef);
     this.leaveList = snap.docs
       .map(doc => doc.data())

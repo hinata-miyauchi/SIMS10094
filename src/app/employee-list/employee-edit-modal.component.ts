@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { setDoc, doc } from '@angular/fire/firestore';
 import { Firestore } from '@angular/fire/firestore';
+import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-employee-edit-modal',
@@ -21,7 +22,7 @@ export class EmployeeEditModalComponent {
   subTabIndex = 0;
   loading = false;
 
-  constructor(private firestore: Firestore) {}
+  constructor(private firestore: Firestore, private auth: Auth) {}
 
   async onSave() {
     // バリデーションは従業員登録画面のvalidateEmployeeロジックを流用
@@ -31,6 +32,12 @@ export class EmployeeEditModalComponent {
       return;
     }
     this.formErrorMessage = '';
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) {
+      this.formErrorMessage = 'ログイン情報が取得できません。再度ログインしてください。';
+      return;
+    }
+    this.employee.uid = uid;
     this.loading = true;
     await setDoc(doc(this.firestore, 'employees', this.employee.employee_no), this.employee, { merge: true });
     this.loading = false;
@@ -76,6 +83,18 @@ export class EmployeeEditModalComponent {
     }
     if (employee.status === '退職' && !employee.retirement_date) {
       errors.push('退社年月日がありません');
+    }
+    // 休職時の必須チェック
+    if (employee.status === '休職') {
+      if (!employee.leave_reason) {
+        errors.push('休職理由がありません');
+      }
+      if (!employee.leave_start) {
+        errors.push('休職開始日がありません');
+      }
+      if (!employee.leave_end) {
+        errors.push('休職終了日がありません');
+      }
     }
     return errors;
   }

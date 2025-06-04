@@ -1,0 +1,47 @@
+<div class="csv-import-container">
+  <div class="top-bar">
+    <button class="home-btn" routerLink="/admin">管理者メニューへ戻る</button>
+  </div>
+  <h2 class="main-title" *ngIf="tabIndex === 0">保険料率マスタCSVインポート</h2>
+  <h2 class="main-title" *ngIf="tabIndex === 1">等級マスタCSVインポート</h2>
+  <div class="tab-bar">
+    <button [class.active]="tabIndex === 0" (click)="setTab(0)">保険料率インポート</button>
+    <button [class.active]="tabIndex === 1" (click)="setTab(1)">等級インポート</button>
+  </div>
+  <div class="tab-content">
+    <ng-container *ngIf="tabIndex === 0">
+      <div style="display: flex; align-items: flex-end; gap: 12px; margin-bottom: 8px;">
+        <label class="file-label">
+          ファイルを選択
+          <input type="file" (change)="onFileSelected($event)" accept=".csv" />
+        </label>
+        <div style="color: #888; font-size: 0.98em;">※ インポート時、列名の日本語は不要です。</div>
+      </div>
+      <span class="selected-file-name">{{selectedFile?.name || '選択されていません'}}</span>
+      <button class="import-btn" (click)="importCsv()" [disabled]="!selectedFile || loading">インポートする</button>
+      <span class="import-message">{{message}}</span>
+      <div *ngIf="loading">インポート中...</div>
+      <div class="sample-info">
+        <button (click)="downloadSampleCsv()">サンプルCSVをダウンロード</button>
+        <button (click)="downloadFormatCsv()">フォーマットCSVをダウンロード</button>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="tabIndex === 1">
+      <div style="display: flex; align-items: flex-end; gap: 12px; margin-bottom: 8px;">
+        <label class="file-label">
+          ファイルを選択
+          <input type="file" (change)="onFileSelectedGrade($event)" accept=".csv" />
+        </label>
+        <div style="color: #888; font-size: 0.98em;">※ インポート時、列名の日本語は不要です。</div>
+      </div>
+      <span class="selected-file-name">{{selectedFileGrade?.name || '選択されていません'}}</span>
+      <button class="import-btn" (click)="importGradeCsv()" [disabled]="!selectedFileGrade || loading">インポートする</button>
+      <span class="import-message">{{message}}</span>
+      <div *ngIf="loading">インポート中...</div>
+      <div class="sample-info">
+        <button (click)="downloadSampleCsvGrade()">サンプルCSVをダウンロード</button>
+        <button (click)="downloadFormatCsvGrade()">フォーマットCSVをダウンロード</button>
+      </div>
+    </ng-container>
+  </div>
+</div>

@@ -29,11 +29,6 @@ export class LoginComponent {
     const { email, password } = this.loginForm.value;
     try {
       const cred = await signInWithEmailAndPassword(this.auth, email, password);
-      if (cred.user.email !== 'admin@gmail.com') {
-        await this.auth.signOut();
-        this.errorMessage = '管理者のみログイン可能です。';
-        return;
-      }
       this.router.navigate(['/home']);
     } catch (error: any) {
       this.errorMessage = error.message;

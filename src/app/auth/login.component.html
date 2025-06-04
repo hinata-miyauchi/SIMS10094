@@ -1,9 +1,12 @@
 <div class="login-container">
+  <div class="admin-btn-bar">
+    <button class="admin-btn" routerLink="/admin-auth">管理者画面</button>
+  </div>
   <h1>ログイン</h1>
   <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-card">
     <div class="form-group">
       <label for="email">メールアドレス</label>
-      <input id="email" type="email" formControlName="email" required />
+      <input id="email" type="email" formControlName="email" required autocomplete="off" />
       <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" class="error">
         有効なメールアドレスを入力してください。
       </div>

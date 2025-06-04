@@ -1,0 +1,42 @@
+<div class="account-create-container">
+  <div class="top-bar">
+    <button class="home-btn" routerLink="/admin">管理者メニューへ戻る</button>
+  </div>
+  <h2>アカウント作成</h2>
+  <div class="account-create-card">
+    <form (ngSubmit)="onRegister()" #registerForm="ngForm" autocomplete="off">
+      <div class="form-group">
+        <label>ユーザー名</label>
+        <input type="text" name="username" [(ngModel)]="username" required maxlength="30" />
+      </div>
+      <div class="form-group">
+        <label>メールアドレス</label>
+        <input type="email" name="email" [(ngModel)]="email" required />
+      </div>
+      <div class="form-group">
+        <label>パスワード</label>
+        <div class="password-input">
+          <input type="password" name="password" [(ngModel)]="password" required minlength="6" [type]="hide ? 'password' : 'text'" />
+          <button type="button" class="eye-btn" (click)="hide = !hide" tabindex="-1">
+            <span *ngIf="hide">👁️</span><span *ngIf="!hide">🙈</span>
+          </button>
+        </div>
+        <div class="input-hint">※6文字以上必須</div>
+      </div>
+      <div class="form-group">
+        <label>パスワード（確認）</label>
+        <div class="password-input">
+          <input type="password" name="confirmPassword" [(ngModel)]="confirmPassword" required [type]="hideConfirm ? 'password' : 'text'" />
+          <button type="button" class="eye-btn" (click)="hideConfirm = !hideConfirm" tabindex="-1">
+            <span *ngIf="hideConfirm">👁️</span><span *ngIf="!hideConfirm">🙈</span>
+          </button>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" [disabled]="loading">アカウント作成</button>
+      </div>
+      <div class="message error" *ngIf="errorMessage">{{errorMessage}}</div>
+      <div class="message success" *ngIf="successMessage">{{successMessage}}</div>
+    </form>
+  </div>
+</div>

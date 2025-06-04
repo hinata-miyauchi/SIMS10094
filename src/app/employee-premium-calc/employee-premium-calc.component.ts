@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { Firestore, collection, getDocs, DocumentData, query, where } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
+import { Auth } from '@angular/fire/auth';
 
 interface Employee {
   id?: string;
@@ -73,7 +74,7 @@ export class EmployeePremiumCalcComponent implements OnInit {
   noEmployeeFound: boolean = false;
   salaryNotFoundMessage: string = '';
 
-  constructor(private firestore: Firestore, private router: Router) {}
+  constructor(private firestore: Firestore, private router: Router, private auth: Auth) {}
 
   async ngOnInit() {
     this.loading = true;
@@ -87,7 +88,6 @@ export class EmployeePremiumCalcComponent implements OnInit {
     this.selectedSalaryYear = now.getFullYear().toString();
     this.selectedSalaryMonthOnly = ('0' + (now.getMonth() + 1)).slice(-2);
     this.updateSalaryMonth();
-    // 給与計算月の選択肢（2021年4月から現在までを生成）
     this.salaryMonthOptions = [];
     const endYear = now.getFullYear();
     const endMonth = now.getMonth() + 1;
@@ -103,15 +103,18 @@ export class EmployeePremiumCalcComponent implements OnInit {
       }
     }
     this.selectedSalaryMonth = this.salaryMonthOptions[0].value;
-    // 等級マスタ
+    // uid取得
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) { this.loading = false; return; }
+    // 等級マスタ（uidで絞り込まない）
     const gradeSnap = await getDocs(collection(this.firestore, 'grades'));
     this.grades = gradeSnap.docs.map(doc => doc.data() as Grade);
-    // 保険料率マスタ
+    // 保険料率マスタ（uidで絞り込まない）
     const rateSnap = await getDocs(collection(this.firestore, 'insuranceRates'));
     this.rates = rateSnap.docs.map(doc => doc.data() as Rate);
-    // 会社情報（事業所情報）を取得
-    const companySnap = await getDocs(collection(this.firestore, 'company'));
-    const companyDoc = companySnap.docs.find(doc => doc.id === 'main');
+    // 会社情報（uidで絞り込む）
+    const companySnap = await getDocs(query(collection(this.firestore, 'company'), where('uid', '==', uid)));
+    const companyDoc = companySnap.docs[0];
     if (companyDoc) {
       const companyData = companyDoc.data();
       this.officesForm = companyData['officesForm'] || [];
@@ -135,9 +138,11 @@ export class EmployeePremiumCalcComponent implements OnInit {
     this.salaryNotFoundMessage = '';
     this.loading = true;
 
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) { this.loading = false; return; }
     // 社員番号未入力で給与計算年月のみ指定時
     if (!this.searchEmployeeNo && this.selectedSalaryMonth) {
-      const salarySnap = await getDocs(collection(this.firestore, 'salaries'));
+      const salarySnap = await getDocs(query(collection(this.firestore, 'salaries'), where('uid', '==', uid)));
       const matchedSalaries = salarySnap.docs.filter(doc => doc.id.endsWith(`_${this.selectedSalaryMonth}`));
       const employeeNos = matchedSalaries.map(doc => doc.id.split('_')[0]);
       if (employeeNos.length === 0) {
@@ -146,7 +151,7 @@ export class EmployeePremiumCalcComponent implements OnInit {
         return;
       }
       // 社員情報をまとめて取得
-      const employeesSnap = await getDocs(collection(this.firestore, 'employees'));
+      const employeesSnap = await getDocs(query(collection(this.firestore, 'employees'), where('uid', '==', uid)));
       this.employees = employeesSnap.docs
         .map(doc => {
           const data = doc.data() as any;
@@ -188,7 +193,8 @@ export class EmployeePremiumCalcComponent implements OnInit {
     this.salaryNotFoundMessage = '';
     const q = query(
       collection(this.firestore, 'employees'),
-      where('employee_no', '==', String(this.searchEmployeeNo).trim())
+      where('employee_no', '==', String(this.searchEmployeeNo).trim()),
+      where('uid', '==', uid)
     );
     const snap = await getDocs(q);
     this.employees = snap.docs.map(doc => {

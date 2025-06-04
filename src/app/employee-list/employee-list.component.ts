@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { collection, getDocs, getFirestore, query, orderBy, doc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, getFirestore, query, orderBy, doc, setDoc, where } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { RouterLink } from '@angular/router';
 import { EmployeeEditModalComponent } from './employee-edit-modal.component';
+import { Auth, onAuthStateChanged } from '@angular/fire/auth';
 // Firebaseの初期化（必要に応じて環境変数に置き換えてください）
 const firebaseConfig = {
   apiKey: "AIzaSyADXQFj89_ECMHUODzUkbMhoNAzHlpVu_U",
@@ -54,7 +55,10 @@ export class EmployeeListComponent implements OnInit {
   public employmentForm = {
     status: '',
     hire_date: '',
-    retirement_date: ''
+    retirement_date: '',
+    leave_start: '',
+    leave_end: '',
+    leave_reason: ''
   };
   public workForm = {
     employee_no: '',
@@ -102,30 +106,33 @@ export class EmployeeListComponent implements OnInit {
   public selectedEmployee: any = null;
 
   constructor(
-    private router: Router
+    private router: Router,
+    private auth: Auth
   ) {}
 
   async ngOnInit(): Promise<void> {
-    // 従業員一覧の取得
-    const q = query(collection(db, 'employees'), orderBy('employee_no', 'asc'));
-    const querySnapshot = await getDocs(q);
-    this.employeeList = querySnapshot.docs
-      .map(doc => doc.data())
-      .sort((a, b) => Number(a['employee_no']) - Number(b['employee_no']));
-
-    // 会社情報（事業所名リスト）を取得
-    const companySnap = await getDocs(collection(db, 'company'));
-    const companyDoc = companySnap.docs.find(doc => doc.id === 'main');
-    if (companyDoc) {
-      const companyData = companyDoc.data();
-      const officesForm = companyData['officesForm'] || [];
-      // officesFormが配列で、各要素にofficeNameが存在する場合すべて抽出
-      this.officeNameList = officesForm
-        .map((o: any) => o.officeName)
-        .filter((name: string | undefined) => typeof name === 'string' && name.trim() !== '');
-    } else {
-      this.officeNameList = [];
-    }
+    // uidの取得をonAuthStateChangedで確実に
+    onAuthStateChanged(this.auth, async (user) => {
+      if (!user) return;
+      const uid = user.uid;
+      const q = query(collection(db, 'employees'), where('uid', '==', uid));
+      const querySnapshot = await getDocs(q);
+      this.employeeList = querySnapshot.docs
+        .map(doc => doc.data())
+        .sort((a, b) => Number(a['employee_no']) - Number(b['employee_no']));
+      // 会社情報（事業所名リスト）を取得
+      const companySnap = await getDocs(collection(db, 'company'));
+      const companyDoc = companySnap.docs.find(doc => doc.id === 'main');
+      if (companyDoc) {
+        const companyData = companyDoc.data();
+        const officesForm = companyData['officesForm'] || [];
+        this.officeNameList = officesForm
+          .map((o: any) => o.officeName)
+          .filter((name: string | undefined) => typeof name === 'string' && name.trim() !== '');
+      } else {
+        this.officeNameList = [];
+      }
+    });
   }
 
   downloadFormatCSV() {
@@ -253,6 +260,18 @@ export class EmployeeListComponent implements OnInit {
     if (employee.status === '退職' && !employee.retirement_date) {
       errors.push('退社年月日がありません');
     }
+    // 休職時の必須チェック
+    if (employee.status === '休職') {
+      if (!employee.leave_reason) {
+        errors.push('休職理由がありません');
+      }
+      if (!employee.leave_start) {
+        errors.push('休職開始日がありません');
+      }
+      if (!employee.leave_end) {
+        errors.push('休職終了日がありません');
+      }
+    }
     return errors;
   }
 
@@ -327,14 +346,17 @@ export class EmployeeListComponent implements OnInit {
     this.loading = false;
   }
 
-  onRegisterOrUpdate() {
+  async onRegisterOrUpdate() {
     // 各フォーム値を1つの従業員オブジェクトにまとめる
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) return;
     const employee = {
       ...this.basicForm,
       ...this.employmentForm,
       ...this.workForm,
       ...this.contactForm,
       ...this.insuranceForm,
+      uid,
       // full_name, full_name_kanaを明示的に追加
       full_name: (this.basicForm.last_name || '') + ' ' + (this.basicForm.first_name || ''),
       full_name_kana: (this.basicForm.last_name_kana || '') + ' ' + (this.basicForm.first_name_kana || '')
@@ -354,7 +376,7 @@ export class EmployeeListComponent implements OnInit {
     }
     this.formErrorMessage = '';
     // Firestore登録処理
-    setDoc(doc(db, 'employees', employee.employee_no), employee)
+    await setDoc(doc(db, 'employees', employee.employee_no), employee)
       .then(() => {
         this.formErrorMessage = '登録が完了しました。';
         this.setupAutoClearMessage();
@@ -362,7 +384,7 @@ export class EmployeeListComponent implements OnInit {
         this.basicForm = {
           last_name: '', first_name: '', last_name_kana: '', first_name_kana: '', birth_date: '', gender: '', my_number: '', nationality: '', has_dependents: '', has_disability: '', has_overseas: '', overseas_employment_type: '', is_social_security_agreement: '', overseas_assignment_start: '', overseas_assignment_end: ''
         };
-        this.employmentForm = { status: '', hire_date: '', retirement_date: '' };
+        this.employmentForm = { status: '', hire_date: '', retirement_date: '', leave_start: '', leave_end: '', leave_reason: '' };
         this.workForm = { employee_no: '', office: '', employment_type: '', scheduled_working_hours: '', expected_monthly_income: '', employment_expectation: '' };
         this.contactForm = { address: '', phone_number: '' };
         this.insuranceForm = { health_insurance_no: '', pension_insurance_no: '', basic_pension_no: '', qualification_acquisition_date: '', qualification_loss_date: '' };
@@ -431,7 +453,7 @@ export class EmployeeListComponent implements OnInit {
       this.basicForm = {
         last_name: '', first_name: '', last_name_kana: '', first_name_kana: '', birth_date: '', gender: '', my_number: '', nationality: '', has_dependents: '', has_disability: '', has_overseas: '', overseas_employment_type: '', is_social_security_agreement: '', overseas_assignment_start: '', overseas_assignment_end: ''
       };
-      this.employmentForm = { status: '', hire_date: '', retirement_date: '' };
+      this.employmentForm = { status: '', hire_date: '', retirement_date: '', leave_start: '', leave_end: '', leave_reason: '' };
       this.workForm = { employee_no: '', office: '', employment_type: '', scheduled_working_hours: '', expected_monthly_income: '', employment_expectation: '' };
       this.contactForm = { address: '', phone_number: '' };
       this.insuranceForm = { health_insurance_no: '', pension_insurance_no: '', basic_pension_no: '', qualification_acquisition_date: '', qualification_loss_date: '' };

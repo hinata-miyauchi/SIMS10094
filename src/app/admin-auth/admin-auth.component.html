@@ -1,0 +1,21 @@
+<div class="admin-auth-container">
+  <div class="top-bar">
+    <button class="home-btn" routerLink="/login">ログイン画面へ戻る</button>
+  </div>
+  <h2>管理者認証</h2>
+  <form (ngSubmit)="onSubmit()" #authForm="ngForm" autocomplete="off" class="admin-auth-card">
+    <div class="form-group">
+      <label>管理者パスワード</label>
+      <div class="password-input">
+        <input type="password" name="adminPassword" [(ngModel)]="adminPassword" required [type]="hide ? 'password' : 'text'" />
+        <button type="button" class="eye-btn" (click)="hide = !hide" tabindex="-1">
+          <span *ngIf="hide">👁️</span><span *ngIf="!hide">🙈</span>
+        </button>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" [disabled]="loading">認証して管理者画面へ</button>
+    </div>
+    <div class="message error" *ngIf="errorMessage">{{errorMessage}}</div>
+  </form>
+</div>

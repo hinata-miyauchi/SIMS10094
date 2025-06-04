@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Firestore, doc, getDoc, setDoc } from '@angular/fire/firestore';
+import { Firestore, doc, getDoc, setDoc, query, where, collection, getDocs } from '@angular/fire/firestore';
+import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-company-info',
@@ -27,7 +28,7 @@ export class CompanyInfoComponent implements OnInit {
   submitted = false;
   private clearMessageListener: (() => void) | null = null;
 
-  constructor(private fb: FormBuilder, private firestore: Firestore) {
+  constructor(private fb: FormBuilder, private firestore: Firestore, private auth: Auth) {
     this.companyForm = this.fb.group({
       // 基本情報
       basic: this.fb.group({
@@ -65,11 +66,13 @@ export class CompanyInfoComponent implements OnInit {
   }
 
   async ngOnInit() {
-    // Firestoreから会社情報を取得してフォームに反映
-    const ref = doc(this.firestore, 'company', 'main');
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      const data = snap.data();
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) return;
+    // Firestoreからuidが一致する会社情報を取得
+    const q = query(collection(this.firestore, 'company'), where('uid', '==', uid));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      const data = snap.docs[0].data();
       // officesFormの長さに合わせてFormArrayを調整
       const offices = data['officesForm'] || [];
       const officesFormArray = this.companyForm.get('officesForm') as FormArray;
@@ -152,8 +155,15 @@ export class CompanyInfoComponent implements OnInit {
       return;
     }
     this.loading = true;
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) {
+      this.message = 'ログイン情報が取得できません。再度ログインしてください。';
+      this.loading = false;
+      return;
+    }
     const ref = doc(this.firestore, 'company', 'main');
-    await setDoc(ref, this.companyForm.value, { merge: true });
+    const data = { ...this.companyForm.value, uid };
+    await setDoc(ref, data, { merge: true });
     this.message = '保存しました。';
     this.setupAutoClearMessage();
     this.loading = false;

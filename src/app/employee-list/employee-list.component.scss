@@ -417,3 +417,13 @@ input[type="file"] {
     flex: 1 1 100%;
   }
 }
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+.form-row .form-group {
+  flex: 1 1 0;
+  min-width: 0;
+}
