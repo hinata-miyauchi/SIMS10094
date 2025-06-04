@@ -71,9 +71,10 @@ export class EmployeeListComponent implements OnInit {
   public employmentTypeMain = [
     '正社員',
     '契約社員',
+    '嘱託社員',
     'パート・アルバイト',
     '有給インターン',
-    'その他'
+    '個人事業主'
   ];
 
   public employmentTypeDetail = [
@@ -235,8 +236,8 @@ export class EmployeeListComponent implements OnInit {
         errors.push('社会保障協定国であるかがありません');
       }
     }
-    if (employee.status === '退職' || employee.status === true || employee.status === 'true') {
-      if (!employee.retirement_date) errors.push('退社年月日がありません');
+    if (employee.status === '退職' && !employee.retirement_date) {
+      errors.push('退社年月日がありません');
     }
     return errors;
   }

@@ -81,7 +81,7 @@
                 </select>
               </div>
               <div class="form-group">
-                <label>マイナンバー <span class="required">*</span></label>
+                <label>マイナンバー（12桁） <span class="required">*</span></label>
                 <input type="text" name="my_number" [(ngModel)]="basicForm.my_number" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(basicForm, 'my_number')" autocomplete="off" />
               </div>
               <div class="form-group">
@@ -123,7 +123,10 @@
                 <label>社会保障協定国であるか <span class="required">*</span>
                   <span class="tooltip-icon" tabindex="0">？
                     <span class="tooltip-text">
-                      社会保障協定国はドイツ・イギリス・韓国・アメリカ・ベルギー・フランス・カナダ・オーストラリア・オランダ・チェコ・スペイン・アイルランド・ブラジル・スイス・ハンガリー・インド・ルクセンブルク・フィリピン・スロバキア・中国・フィンランド・スウェーデン・イタリアの計23か国のことです（2025年6月現在）
+                      社会保障協定国は、ドイツ・イギリス・韓国・アメリカ・ベルギー・<br>
+                      フランス・カナダ・オーストラリア・オランダ・チェコ・スペイン・アイルランド・<br>
+                      ブラジル・スイス・ハンガリー・インド・ルクセンブルク・フィリピン・スロバキア・<br>
+                      中国・フィンランド・スウェーデン・イタリアの計23か国のことです（2025年6月現在）
                     </span>
                   </span>
                 </label>
@@ -159,8 +162,8 @@
                 <label>入社年月日 <span class="required">*</span></label>
                 <input type="date" name="hire_date" [(ngModel)]="employmentForm.hire_date" autocomplete="off" />
               </div>
-              <div class="form-group">
-                <label>退社年月日</label>
+              <div class="form-group" *ngIf="employmentForm.status === '退職'">
+                <label>退社年月日 <span class="required">*</span></label>
                 <input type="date" name="retirement_date" [(ngModel)]="employmentForm.retirement_date" autocomplete="off" />
               </div>
             </div>
@@ -193,14 +196,14 @@
                 </select>
               </div>
               <div class="form-group">
-                <label>雇用見込み <span class="required">*</span></label>
+                <label>雇用見込み期間 <span class="required">*</span></label>
                 <select [(ngModel)]="workForm.employment_expectation" name="employment_expectation" autocomplete="off">
                   <option value="2か月超">2か月超</option>
                   <option value="2か月以内">2か月以内</option>
                 </select>
               </div>
               <div class="form-group">
-                <label>所定労働時間 <span class="required">*</span>
+                <label>所定労働時間（h） <span class="required">*</span>
                   <span class="tooltip-icon" tabindex="0">？
                     <span class="tooltip-text">1週間あたりの勤務時間(h)</span>
                   </span>
@@ -208,9 +211,9 @@
                 <input type="text" name="scheduled_working_hours" [(ngModel)]="workForm.scheduled_working_hours" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(workForm, 'scheduled_working_hours')" autocomplete="off" />
               </div>
               <div class="form-group">
-                <label>見込み月収 <span class="required">*</span>
+                <label>見込み月収（円） <span class="required">*</span>
                   <span class="tooltip-icon" tabindex="0">？
-                    <span class="tooltip-text">基本給＋毎月固定支給手当（残業手当、賞与などは含まれない）で算出を行う</span>
+                    <span class="tooltip-text">基本給＋毎月固定支給手当（残業手当、賞与などは含まれない）</span>
                   </span>
                 </label>
                 <input type="text" name="expected_monthly_income" [(ngModel)]="workForm.expected_monthly_income" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(workForm, 'expected_monthly_income')" autocomplete="off" />
