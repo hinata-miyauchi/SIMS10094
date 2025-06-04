@@ -24,6 +24,8 @@ export class CompanyInfoComponent implements OnInit {
   companyForm: FormGroup;
   loading = false;
   message = '';
+  submitted = false;
+  private clearMessageListener: (() => void) | null = null;
 
   constructor(private fb: FormBuilder, private firestore: Firestore) {
     this.companyForm = this.fb.group({
@@ -31,7 +33,7 @@ export class CompanyInfoComponent implements OnInit {
       basic: this.fb.group({
         name: ['', Validators.required],
         nameKana: [''],
-        companyNo: [''],
+        companyNo: ['', Validators.required],
         address: [''],
         addressKana: [''],
         president: [''],
@@ -45,20 +47,19 @@ export class CompanyInfoComponent implements OnInit {
       ]),
       // 保険情報
       insurance: this.fb.group({
-        healthType: [''],
-        pensionStatus: ['']
+        healthType: ['', Validators.required],
+        pensionStatus: ['', Validators.required]
       }),
       // 給与情報
       salary: this.fb.group({
         closingDay: [''],
         paymentDay: [''],
-        paymentTiming: ['']
+        paymentTiming: ['', Validators.required]
       }),
       // 担当者情報
       staff: this.fb.group({
         staffName: [''],
-        staffContact: [''],
-        adminAccount: ['']
+        staffContact: ['']
       })
     });
   }
@@ -104,11 +105,12 @@ export class CompanyInfoComponent implements OnInit {
 
   createOfficeForm(): FormGroup {
     return this.fb.group({
-      officeName: [''],
+      officeName: ['', Validators.required],
       officeAddress: [''],
-      applicableOfficeNo: [''],
+      officeAddressKana: [''],
+      applicableOfficeNo: ['', Validators.required],
       officeType: [''],
-      prefecture: ['']
+      prefecture: ['', Validators.required]
     });
   }
 
@@ -124,17 +126,57 @@ export class CompanyInfoComponent implements OnInit {
 
   setTab(idx: number) {
     this.tabIndex = idx;
+    this.submitted = false;
+  }
+
+  private setupAutoClearMessage() {
+    if (this.clearMessageListener) return;
+    const clear = () => {
+      this.message = '';
+      window.removeEventListener('click', clear, true);
+      window.removeEventListener('focusin', clear, true);
+      window.removeEventListener('keydown', clear, true);
+      this.clearMessageListener = null;
+    };
+    window.addEventListener('click', clear, true);
+    window.addEventListener('focusin', clear, true);
+    window.addEventListener('keydown', clear, true);
+    this.clearMessageListener = clear;
   }
 
   async save() {
+    this.submitted = true;
     if (this.companyForm.invalid) {
-      this.message = '必須項目を入力してください。';
+      const fields = this.invalidRequiredFields;
+      this.message = `必須項目を入力してください：\n${fields.join('、')}`;
       return;
     }
     this.loading = true;
     const ref = doc(this.firestore, 'company', 'main');
     await setDoc(ref, this.companyForm.value, { merge: true });
     this.message = '保存しました。';
+    this.setupAutoClearMessage();
     this.loading = false;
+    this.submitted = false;
+  }
+
+  get invalidRequiredFields(): string[] {
+    const fields: string[] = [];
+    // 基本情報
+    if (this.basicForm.get('name')?.invalid) fields.push('会社名');
+    if (this.basicForm.get('companyNo')?.invalid) fields.push('法人番号');
+    // 事業所情報（最初の事業所のみチェック）
+    const office = this.officesForm.at(0);
+    if (office) {
+      if (office.get('officeName')?.invalid) fields.push('事業所名称');
+      if (office.get('applicableOfficeNo')?.invalid) fields.push('適用事業所番号');
+      if (office.get('prefecture')?.invalid) fields.push('都道府県');
+    }
+    // 保険情報
+    if (this.insuranceForm.get('healthType')?.invalid) fields.push('健康保険種別');
+    if (this.insuranceForm.get('pensionStatus')?.invalid) fields.push('厚生年金加入の有無');
+    // 給与情報
+    if (this.salaryForm.get('paymentTiming')?.invalid) fields.push('給与支払タイミング');
+    return fields;
   }
 } 

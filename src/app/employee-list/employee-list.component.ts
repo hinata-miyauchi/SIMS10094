@@ -169,7 +169,7 @@ export class EmployeeListComponent implements OnInit {
     const map: { [key: string]: string } = {
       employee_no: '社員番号', last_name: '姓', first_name: '名', last_name_kana: '姓カナ', first_name_kana: '名カナ',
       birth_date: '生年月日', gender: '性別', nationality: '国籍', has_dependents: '扶養者の有無', has_disability: '障がいの有無',
-      has_overseas: '海外勤務の有無', status: '在籍状況', hire_date: '入社年月日', office: '所属事業所', employment_type: '雇用形態',
+      has_overseas: '海外勤務の有無', status: '在籍状況', hire_date: '入社年月日', office: '所属事業所', employment_type: '雇用形態',employment_type_detail: '区分',my_number: 'マイナンバー',
       employment_expectation: '雇用見込み', scheduled_working_hours: '所定労働時間', expected_monthly_income: '見込み月収',
       address: '現住所', phone_number: '電話番号', overseas_employment_type: '海外勤務時の雇用形態', is_social_security_agreement: '社会保障協定国であるか', overseas_assignment_start: '赴任開始日', retirement_date: '退社年月日'
     };
@@ -211,8 +211,8 @@ export class EmployeeListComponent implements OnInit {
     const errors: string[] = [];
     const requiredFields = [
       'employee_no','last_name','first_name','last_name_kana','first_name_kana','birth_date','gender','nationality',
-      'has_dependents','has_disability','has_overseas','status','hire_date','office','employment_type',
-      'employment_expectation','scheduled_working_hours','expected_monthly_income','address','phone_number'
+      'has_dependents','has_disability','has_overseas','status','hire_date','office','employment_type','employment_type_detail',
+      'employment_expectation','scheduled_working_hours','expected_monthly_income','address','phone_number','my_number'
     ];
     requiredFields.forEach(field => {
       if (!employee[field]) errors.push(`${this.fieldNameToLabel(field)}がありません`);
@@ -227,11 +227,12 @@ export class EmployeeListComponent implements OnInit {
     onlyAlnumHyphenFields.forEach(field => {
       if (employee[field] && !/^[A-Za-z0-9\-]+$/.test(employee[field])) errors.push(`${this.fieldNameToLabel(field)}は半角英数字とハイフンのみ入力してください`);
     });
+    // 海外勤務時の雇用形態・赴任開始日・社会保障協定国の必須チェック
     if (employee.has_overseas === 'あり' || employee.has_overseas === true || employee.has_overseas === 'true') {
       if (!employee.overseas_employment_type) errors.push('海外勤務時の雇用形態がありません');
       if (!employee.overseas_assignment_start) errors.push('赴任開始日がありません');
-      if (employee.overseas_employment_type === '日本法人雇用') {
-        if (!employee.is_social_security_agreement) errors.push('社会保障協定国であるかがありません');
+      if (employee.overseas_employment_type === '日本法人雇用' && !employee.is_social_security_agreement) {
+        errors.push('社会保障協定国であるかがありません');
       }
     }
     if (employee.status === '退職' || employee.status === true || employee.status === 'true') {

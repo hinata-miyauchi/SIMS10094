@@ -25,12 +25,12 @@ import { Router, RouterLink } from '@angular/router';
 export class HomeComponent {
   menuItems = [
     { icon: '👤', title: '従業員管理', desc: '従業員一覧、検索、詳細閲覧・編集', btn: '従業員一覧', link: '/employee-list' },
-    { icon: '📥', title: 'マスタインポート', desc: 'CSVインポート（保険料率・等級）', btn: 'マスタCSV', link: '/master-csv-import' },
     { icon: '💴', title: '給与管理', desc: '従業員の給与情報の登録・編集・履歴管理', btn: '給与管理', link: '/salary-management' },
-    { icon: '📄', title: '保険料率一覧', desc: '登録済みの保険料率を一覧表示', btn: '保険料率一覧', link: '/insurance-rate-list' },
-    { icon: '🏢', title: '会社情報', desc: '会社の基本情報を登録・編集', btn: '会社情報', link: '/company-info' },
     { icon: '🧮', title: '保険料計算', desc: '従業員ごとの保険料を自動算出・表示', btn: '保険料計算', link: '/employee-premium-calc' },
-    { icon: '🛡️', title: '社会保険状況', desc: '健康保険・介護保険・厚生年金の加入状況一覧', btn: '社会保険状況', link: '/social-insurance-status' }
+    { icon: '🛡️', title: '社会保険情報', desc: '健康保険・介護保険・厚生年金の加入状況一覧', btn: '社会保険状況', link: '/social-insurance-status' },
+    { icon: '🏢', title: '会社情報', desc: '会社の基本情報を登録・編集', btn: '会社情報', link: '/company-info' },
+    { icon: '📄', title: '保険料率一覧', desc: '登録済みの保険料率を一覧表示', btn: '保険料率一覧', link: '/insurance-rate-list' },
+    { icon: '📥', title: 'マスタインポート', desc: 'CSVインポート（保険料率・等級）', btn: 'マスタCSV', link: '/master-csv-import' }
   ];
   constructor(private auth: Auth, private router: Router) {}
 

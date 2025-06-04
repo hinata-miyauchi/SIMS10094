@@ -50,209 +50,217 @@
         <button class="register-btn" type="button" (click)="onRegisterOrUpdate()">登録</button>
         <div *ngIf="subTabIndex === 0">
           <h3>基本情報</h3>
-          <form>
-            <div class="form-group-row">
-              <label>姓</label>
-              <input type="text" name="last_name" [(ngModel)]="basicForm.last_name" autocomplete="off" />
-            </div>
-            <div class="form-group-row">
-              <label>名</label>
-              <input type="text" name="first_name" [(ngModel)]="basicForm.first_name" autocomplete="off" />
-            </div>
-            <div class="form-group-row">
-              <label>姓カナ</label>
-              <input type="text" name="last_name_kana" [(ngModel)]="basicForm.last_name_kana" autocomplete="off" />
-            </div>
-            <div class="form-group-row">
-              <label>名カナ</label>
-              <input type="text" name="first_name_kana" [(ngModel)]="basicForm.first_name_kana" autocomplete="off" />
-            </div>
-            <div class="form-group-row">
-              <label>生年月日</label>
-              <input type="date" name="birth_date" [(ngModel)]="basicForm.birth_date" autocomplete="off" />
-            </div>
-            <div class="form-group-row">
-              <label>性別</label>
-              <select name="gender" [(ngModel)]="basicForm.gender" autocomplete="off">
-                <option value="男">男</option>
-                <option value="女">女</option>
-                <option value="その他">その他</option>
-              </select>
-            </div>
-            <div class="form-group-row">
-              <label>マイナンバー</label>
-              <input type="text" name="my_number" [(ngModel)]="basicForm.my_number" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(basicForm, 'my_number')" autocomplete="off" />
-            </div>
-            <div class="form-group-row">
-              <label>国籍</label>
-              <select [(ngModel)]="basicForm.nationality" name="nationality" autocomplete="off">
-                <option value="日本">日本</option>
-                <option value="日本以外">日本以外</option>
-              </select>
-            </div>
-            <div class="form-group-row">
-              <label>扶養者の有無</label>
-              <select name="has_dependents" [(ngModel)]="basicForm.has_dependents" autocomplete="off">
-                <option value="true">あり</option>
-                <option value="false">なし</option>
-              </select>
-            </div>
-            <div class="form-group-row">
-              <label>障がいの有無</label>
-              <select name="has_disability" [(ngModel)]="basicForm.has_disability" autocomplete="off">
-                <option value="true">あり</option>
-                <option value="false">なし</option>
-              </select>
-            </div>
-            <div class="form-group-row">
-              <label>海外勤務の有無</label>
-              <select name="has_overseas" [(ngModel)]="basicForm.has_overseas" autocomplete="off">
-                <option value="true">あり</option>
-                <option value="false">なし</option>
-              </select>
-            </div>
-            <div class="form-group-row" *ngIf="basicForm.has_overseas === 'true'">
-              <label>海外勤務時の雇用形態</label>
-              <select name="overseas_employment_type" [(ngModel)]="basicForm.overseas_employment_type" autocomplete="off">
-                <option value="" disabled selected>選択してください</option>
-                <option value="日本法人雇用">日本法人雇用</option>
-                <option value="現地法人雇用">現地法人雇用</option>
-              </select>
-            </div>
-            <div class="form-group-row" *ngIf="basicForm.has_overseas === 'true' && basicForm.overseas_employment_type === '日本法人雇用'">
-              <label>社会保障協定国であるか
-                <span class="tooltip-icon" tabindex="0">？
-                  <span class="tooltip-text">
-                    社会保障協定国はドイツ・イギリス・韓国・アメリカ・ベルギー・フランス・カナダ・オーストラリア・オランダ・チェコ・スペイン・アイルランド・ブラジル・スイス・ハンガリー・インド・ルクセンブルク・フィリピン・スロバキア・中国・フィンランド・スウェーデン・イタリアの計23か国のことです（2025年6月現在）
+          <form class="company-form">
+            <div class="form-fields">
+              <div class="form-group">
+                <label>姓 <span class="required">*</span></label>
+                <input type="text" name="last_name" [(ngModel)]="basicForm.last_name" autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label>名 <span class="required">*</span></label>
+                <input type="text" name="first_name" [(ngModel)]="basicForm.first_name" autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label>姓（カナ） <span class="required">*</span></label>
+                <input type="text" name="last_name_kana" [(ngModel)]="basicForm.last_name_kana" autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label>名（カナ） <span class="required">*</span></label>
+                <input type="text" name="first_name_kana" [(ngModel)]="basicForm.first_name_kana" autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label>生年月日 <span class="required">*</span></label>
+                <input type="date" name="birth_date" [(ngModel)]="basicForm.birth_date" autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label>性別 <span class="required">*</span></label>
+                <select name="gender" [(ngModel)]="basicForm.gender" autocomplete="off">
+                  <option value="男">男</option>
+                  <option value="女">女</option>
+                  <option value="その他">その他</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>マイナンバー <span class="required">*</span></label>
+                <input type="text" name="my_number" [(ngModel)]="basicForm.my_number" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(basicForm, 'my_number')" autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label>国籍 <span class="required">*</span></label>
+                <select [(ngModel)]="basicForm.nationality" name="nationality" autocomplete="off">
+                  <option value="日本">日本</option>
+                  <option value="日本以外">日本以外</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>扶養者の有無 <span class="required">*</span></label>
+                <select name="has_dependents" [(ngModel)]="basicForm.has_dependents" autocomplete="off">
+                  <option value="true">あり</option>
+                  <option value="false">なし</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>障がいの有無 <span class="required">*</span></label>
+                <select name="has_disability" [(ngModel)]="basicForm.has_disability" autocomplete="off">
+                  <option value="true">あり</option>
+                  <option value="false">なし</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>海外勤務の有無 <span class="required">*</span></label>
+                <select name="has_overseas" [(ngModel)]="basicForm.has_overseas" autocomplete="off">
+                  <option value="true">あり</option>
+                  <option value="false">なし</option>
+                </select>
+              </div>
+              <div class="form-group" *ngIf="basicForm.has_overseas === 'true'">
+                <label>海外勤務時の雇用形態 <span class="required">*</span></label>
+                <select name="overseas_employment_type" [(ngModel)]="basicForm.overseas_employment_type" autocomplete="off">
+                  <option value="日本法人雇用">日本法人雇用</option>
+                  <option value="現地法人雇用">現地法人雇用</option>
+                </select>
+              </div>
+              <div class="form-group" *ngIf="basicForm.has_overseas === 'true' && basicForm.overseas_employment_type === '日本法人雇用'">
+                <label>社会保障協定国であるか <span class="required">*</span>
+                  <span class="tooltip-icon" tabindex="0">？
+                    <span class="tooltip-text">
+                      社会保障協定国はドイツ・イギリス・韓国・アメリカ・ベルギー・フランス・カナダ・オーストラリア・オランダ・チェコ・スペイン・アイルランド・ブラジル・スイス・ハンガリー・インド・ルクセンブルク・フィリピン・スロバキア・中国・フィンランド・スウェーデン・イタリアの計23か国のことです（2025年6月現在）
+                    </span>
                   </span>
-                </span>
-              </label>
-              <select name="is_social_security_agreement" [(ngModel)]="basicForm.is_social_security_agreement" autocomplete="off">
-                <option value="" disabled selected>選択してください</option>
-                <option value="はい">はい</option>
-                <option value="いいえ">いいえ</option>
-              </select>
-            </div>
-            <div class="form-group-row" *ngIf="basicForm.has_overseas === 'true'">
-              <label>赴任開始日</label>
-              <input type="date" name="overseas_assignment_start" [(ngModel)]="basicForm.overseas_assignment_start" autocomplete="off" />
-            </div>
-            <div class="form-group-row" *ngIf="basicForm.has_overseas === 'true'">
-              <label>赴任終了日（予定日）</label>
-              <input type="date" name="overseas_assignment_end" [(ngModel)]="basicForm.overseas_assignment_end" autocomplete="off" />
+                </label>
+                <select name="is_social_security_agreement" [(ngModel)]="basicForm.is_social_security_agreement" autocomplete="off">
+                  <option value="はい">はい</option>
+                  <option value="いいえ">いいえ</option>
+                </select>
+              </div>
+              <div class="form-group" *ngIf="basicForm.has_overseas === 'true'">
+                <label>赴任開始日 <span class="required">*</span></label>
+                <input type="date" name="overseas_assignment_start" [(ngModel)]="basicForm.overseas_assignment_start" autocomplete="off" />
+              </div>
+              <div class="form-group" *ngIf="basicForm.has_overseas === 'true'">
+                <label>赴任終了日（予定日）</label>
+                <input type="date" name="overseas_assignment_end" [(ngModel)]="basicForm.overseas_assignment_end" autocomplete="off" />
+              </div>
             </div>
           </form>
         </div>
         <div *ngIf="subTabIndex === 1">
           <h3>入退社情報</h3>
-          <form>
-            <div class="form-group-row">
-              <label>在籍状況</label>
-              <select name="status" [(ngModel)]="employmentForm.status" autocomplete="off">
-                <option value="在籍">在籍</option>
-                <option value="退職">退職</option>
-                <option value="休職">休職</option>
-              </select>
-            </div>
-            <div class="form-group-row">
-              <label>入社年月日</label>
-              <input type="date" name="hire_date" [(ngModel)]="employmentForm.hire_date" autocomplete="off" />
-            </div>
-            <div class="form-group-row">
-              <label>退社年月日</label>
-              <input type="date" name="retirement_date" [(ngModel)]="employmentForm.retirement_date" autocomplete="off" />
+          <form class="company-form">
+            <div class="form-fields">
+              <div class="form-group">
+                <label>在籍状況 <span class="required">*</span></label>
+                <select name="status" [(ngModel)]="employmentForm.status" autocomplete="off">
+                  <option value="在籍">在籍</option>
+                  <option value="退職">退職</option>
+                  <option value="休職">休職</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>入社年月日 <span class="required">*</span></label>
+                <input type="date" name="hire_date" [(ngModel)]="employmentForm.hire_date" autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label>退社年月日</label>
+                <input type="date" name="retirement_date" [(ngModel)]="employmentForm.retirement_date" autocomplete="off" />
+              </div>
             </div>
           </form>
         </div>
         <div *ngIf="subTabIndex === 2">
           <h3>業務情報</h3>
-          <form>
-            <div class="form-group-row">
-              <label>社員番号</label>
-              <input type="text" name="employee_no" [(ngModel)]="workForm.employee_no" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(workForm, 'employee_no')" autocomplete="off" />
-            </div>
-            <div class="form-group-row">
-              <label>所属事業所</label>
-              <select name="office" [(ngModel)]="workForm.office" autocomplete="off">
-                <option value="" disabled selected>選択してください</option>
-                <option *ngFor="let office of officeNameList" [value]="office">{{ office }}</option>
-              </select>
-            </div>
-            <div class="form-group-row">
-              <label>雇用形態</label>
-              <select [(ngModel)]="selectedEmploymentTypeMain" name="employment_type_main" autocomplete="off">
-                <option value="" disabled selected>選択してください</option>
-                <option *ngFor="let type of employmentTypeMain" [value]="type">{{ type }}</option>
-              </select>
-            </div>
-            <div class="form-group-row" *ngIf="selectedEmploymentTypeMain === 'パート・アルバイト' || selectedEmploymentTypeMain === '有給インターン'">
-              <label>区分</label>
-              <select [(ngModel)]="selectedEmploymentTypeDetail" name="employment_type_detail" autocomplete="off">
-                <option value="" disabled selected>選択してください</option>
-                <option *ngFor="let detail of employmentTypeDetail" [value]="detail">{{ detail }}</option>
-              </select>
-            </div>
-            <div class="form-group-row">
-              <label>雇用見込み</label>
-              <select [(ngModel)]="workForm.employment_expectation" name="employment_expectation" autocomplete="off">
-                <option value="" disabled selected>選択してください</option>
-                <option value="2か月超">2か月超</option>
-                <option value="2か月以内">2か月以内</option>
-              </select>
-            </div>
-            <div class="form-group-row">
-              <label>所定労働時間
-                <span class="tooltip-icon" tabindex="0">？
-                  <span class="tooltip-text">1週間あたりの勤務時間(h)</span>
-                </span>
-              </label>
-              <input type="text" name="scheduled_working_hours" [(ngModel)]="workForm.scheduled_working_hours" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(workForm, 'scheduled_working_hours')" autocomplete="off" />
-            </div>
-            <div class="form-group-row">
-              <label>見込み月収
-                <span class="tooltip-icon" tabindex="0">？
-                  <span class="tooltip-text">基本給＋毎月固定支給手当（残業手当、賞与などは含まれない）で算出を行う</span>
-                </span>
-              </label>
-              <input type="text" name="expected_monthly_income" [(ngModel)]="workForm.expected_monthly_income" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(workForm, 'expected_monthly_income')" autocomplete="off" />
+          <form class="company-form">
+            <div class="form-fields">
+              <div class="form-group">
+                <label>社員番号 <span class="required">*</span></label>
+                <input type="text" name="employee_no" [(ngModel)]="workForm.employee_no" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(workForm, 'employee_no')" autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label>所属事業所 <span class="required">*</span></label>
+                <select name="office" [(ngModel)]="workForm.office" autocomplete="off">
+                  <option *ngFor="let office of officeNameList" [value]="office">{{ office }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>雇用形態 <span class="required">*</span></label>
+                <select [(ngModel)]="selectedEmploymentTypeMain" name="employment_type_main" autocomplete="off">
+                  <option *ngFor="let type of employmentTypeMain" [value]="type">{{ type }}</option>
+                </select>
+              </div>
+              <div class="form-group" *ngIf="selectedEmploymentTypeMain === 'パート・アルバイト' || selectedEmploymentTypeMain === '有給インターン'">
+                <label>区分 <span class="required">*</span></label>
+                <select [(ngModel)]="selectedEmploymentTypeDetail" name="employment_type_detail" autocomplete="off">
+                  <option *ngFor="let detail of employmentTypeDetail" [value]="detail">{{ detail }}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>雇用見込み <span class="required">*</span></label>
+                <select [(ngModel)]="workForm.employment_expectation" name="employment_expectation" autocomplete="off">
+                  <option value="2か月超">2か月超</option>
+                  <option value="2か月以内">2か月以内</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>所定労働時間 <span class="required">*</span>
+                  <span class="tooltip-icon" tabindex="0">？
+                    <span class="tooltip-text">1週間あたりの勤務時間(h)</span>
+                  </span>
+                </label>
+                <input type="text" name="scheduled_working_hours" [(ngModel)]="workForm.scheduled_working_hours" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(workForm, 'scheduled_working_hours')" autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label>見込み月収 <span class="required">*</span>
+                  <span class="tooltip-icon" tabindex="0">？
+                    <span class="tooltip-text">基本給＋毎月固定支給手当（残業手当、賞与などは含まれない）で算出を行う</span>
+                  </span>
+                </label>
+                <input type="text" name="expected_monthly_income" [(ngModel)]="workForm.expected_monthly_income" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(workForm, 'expected_monthly_income')" autocomplete="off" />
+              </div>
             </div>
           </form>
         </div>
         <div *ngIf="subTabIndex === 3">
           <h3>現住所と連絡先</h3>
-          <form>
-            <div class="form-group-row">
-              <label>現住所</label>
-              <input type="text" name="address" [(ngModel)]="contactForm.address" autocomplete="off" />
-            </div>
-            <div class="form-group-row">
-              <label>電話番号</label>
-              <input type="text" name="phone_number" [(ngModel)]="contactForm.phone_number" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(contactForm, 'phone_number')" autocomplete="off" />
+          <form class="company-form">
+            <div class="form-fields">
+              <div class="form-group">
+                <label>現住所 <span class="required">*</span></label>
+                <input type="text" name="address" [(ngModel)]="contactForm.address" autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label>電話番号 <span class="required">*</span></label>
+                <input type="text" name="phone_number" [(ngModel)]="contactForm.phone_number" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(contactForm, 'phone_number')" autocomplete="off" />
+              </div>
             </div>
           </form>
         </div>
         <div *ngIf="subTabIndex === 4">
           <h3>社会保険</h3>
-          <form>
-            <div class="form-group-row">
-              <label>健康保険被保険者番号</label>
-              <input type="text" name="health_insurance_no" [(ngModel)]="insuranceForm.health_insurance_no" pattern="[A-Za-z0-9\-]*" inputmode="text" (input)="onInputAlnumHyphenOnly(insuranceForm, 'health_insurance_no')" autocomplete="off" />
-            </div>
-            <div class="form-group-row">
-              <label>厚生年金被保険者番号</label>
-              <input type="text" name="pension_insurance_no" [(ngModel)]="insuranceForm.pension_insurance_no" pattern="[A-Za-z0-9\-]*" inputmode="text" (input)="onInputAlnumHyphenOnly(insuranceForm, 'pension_insurance_no')" autocomplete="off" />
-            </div>
-            <div class="form-group-row">
-              <label>基礎年金番号</label>
-              <input type="text" name="basic_pension_no" [(ngModel)]="insuranceForm.basic_pension_no" pattern="[A-Za-z0-9\-]*" inputmode="text" (input)="onInputAlnumHyphenOnly(insuranceForm, 'basic_pension_no')" autocomplete="off" />
-            </div>
-            <div class="form-group-row">
-              <label>資格取得日</label>
-              <input type="date" name="qualification_acquisition_date" [(ngModel)]="insuranceForm.qualification_acquisition_date" autocomplete="off" />
-            </div>
-            <div class="form-group-row">
-              <label>資格喪失日</label>
-              <input type="date" name="qualification_loss_date" [(ngModel)]="insuranceForm.qualification_loss_date" autocomplete="off" />
+          <form class="company-form">
+            <div class="form-fields">
+              <div class="insurance-flex-row">
+                <div class="form-group" style="flex:1;">
+                  <label>健康保険被保険者番号</label>
+                  <input type="text" name="health_insurance_no" [(ngModel)]="insuranceForm.health_insurance_no" pattern="[A-Za-z0-9\-]*" inputmode="text" (input)="onInputAlnumHyphenOnly(insuranceForm, 'health_insurance_no')" autocomplete="off" />
+                </div>
+                <div class="form-group" style="flex:1;">
+                  <label>厚生年金被保険者番号</label>
+                  <input type="text" name="pension_insurance_no" [(ngModel)]="insuranceForm.pension_insurance_no" pattern="[A-Za-z0-9\-]*" inputmode="text" (input)="onInputAlnumHyphenOnly(insuranceForm, 'pension_insurance_no')" autocomplete="off" />
+                </div>
+                <div class="form-group" style="flex:1;">
+                  <label>基礎年金番号</label>
+                  <input type="text" name="basic_pension_no" [(ngModel)]="insuranceForm.basic_pension_no" pattern="[A-Za-z0-9\-]*" inputmode="text" (input)="onInputAlnumHyphenOnly(insuranceForm, 'basic_pension_no')" autocomplete="off" />
+                </div>
+              </div>
+              <div class="insurance-flex-row">
+                <div class="form-group" style="flex:1;">
+                  <label>資格取得日</label>
+                  <input type="date" name="qualification_acquisition_date" [(ngModel)]="insuranceForm.qualification_acquisition_date" autocomplete="off" />
+                </div>
+                <div class="form-group" style="flex:1;">
+                  <label>資格喪失日</label>
+                  <input type="date" name="qualification_loss_date" [(ngModel)]="insuranceForm.qualification_loss_date" autocomplete="off" />
+                </div>
+              </div>
             </div>
           </form>
         </div>
