@@ -1,0 +1,35 @@
+<div class="leave-management-container">
+  <div class="top-bar">
+    <button class="home-btn" routerLink="/">ホームへ戻る</button>
+  </div>
+  <h1 class="main-title">休職情報管理</h1>
+  <div class="leave-table-wrapper">
+    <table class="leave-table">
+      <thead>
+        <tr>
+          <th>社員番号</th>
+          <th>氏名</th>
+          <th>休職開始日</th>
+          <th>休職終了日</th>
+          <th>休職理由</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngIf="leaveList.length > 0; else noData">
+          <tr *ngFor="let leave of leaveList">
+            <td>{{ leave.employee_no }}</td>
+            <td>{{ leave.name }}</td>
+            <td>{{ leave.start }}</td>
+            <td>{{ leave.end }}</td>
+            <td>{{ leave.reason }}</td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+    <ng-template #noData>
+      <tr>
+        <td colspan="5" class="no-data-message">該当社員はいません。</td>
+      </tr>
+    </ng-template>
+  </div>
+</div> 

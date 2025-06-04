@@ -4,6 +4,8 @@ import { initializeApp } from 'firebase/app';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
+import { EmployeeEditModalComponent } from './employee-edit-modal.component';
 // Firebaseの初期化（必要に応じて環境変数に置き換えてください）
 const firebaseConfig = {
   apiKey: "AIzaSyADXQFj89_ECMHUODzUkbMhoNAzHlpVu_U",
@@ -19,7 +21,12 @@ const db = getFirestore(app);
 @Component({
   selector: 'app-employee-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    EmployeeEditModalComponent
+  ],
   templateUrl: './employee-list.component.html',
   styleUrls: ['./employee-list.component.scss']
 })
@@ -91,6 +98,8 @@ export class EmployeeListComponent implements OnInit {
   public officeNameList: string[] = [];
   public loading: boolean = false;
   private clearMessageListener: (() => void) | null = null;
+  public editModalOpen = false;
+  public selectedEmployee: any = null;
 
   constructor(
     private router: Router
@@ -212,12 +221,17 @@ export class EmployeeListComponent implements OnInit {
     const errors: string[] = [];
     const requiredFields = [
       'employee_no','last_name','first_name','last_name_kana','first_name_kana','birth_date','gender','nationality',
-      'has_dependents','has_disability','has_overseas','status','hire_date','office','employment_type','employment_type_detail',
+      'has_dependents','has_disability','has_overseas','status','hire_date','office','employment_type',
       'employment_expectation','scheduled_working_hours','expected_monthly_income','address','phone_number','my_number'
     ];
     requiredFields.forEach(field => {
       if (!employee[field]) errors.push(`${this.fieldNameToLabel(field)}がありません`);
     });
+    // 区分の必須チェック
+    if ((employee.employment_type.startsWith('パート・アルバイト') || employee.employment_type.startsWith('有給インターン')) &&
+    !employee.employment_type_detail) {
+      errors.push('区分がありません');
+    }
     // 半角数字のみチェック
     const onlyNumberFields = ['my_number','employee_no','scheduled_working_hours','expected_monthly_income','phone_number'];
     onlyNumberFields.forEach(field => {
@@ -396,5 +410,35 @@ export class EmployeeListComponent implements OnInit {
     window.addEventListener('focusin', clear, true);
     window.addEventListener('keydown', clear, true);
     this.clearMessageListener = clear;
+  }
+
+  openEditModal(emp: any) {
+    this.selectedEmployee = { ...emp };
+    this.editModalOpen = true;
+  }
+
+  onEmployeeUpdated() {
+    // 従業員一覧を再取得するロジックをここに記述（ngOnInit等を呼び出し）
+    this.ngOnInit();
+  }
+
+  setMainTabIndex(idx: number) {
+    this.mainTabIndex = idx;
+    if (idx === 1) {
+      this.subTabIndex = 0;
+    } else {
+      // 従業員登録画面の入力内容をリセット
+      this.basicForm = {
+        last_name: '', first_name: '', last_name_kana: '', first_name_kana: '', birth_date: '', gender: '', my_number: '', nationality: '', has_dependents: '', has_disability: '', has_overseas: '', overseas_employment_type: '', is_social_security_agreement: '', overseas_assignment_start: '', overseas_assignment_end: ''
+      };
+      this.employmentForm = { status: '', hire_date: '', retirement_date: '' };
+      this.workForm = { employee_no: '', office: '', employment_type: '', scheduled_working_hours: '', expected_monthly_income: '', employment_expectation: '' };
+      this.contactForm = { address: '', phone_number: '' };
+      this.insuranceForm = { health_insurance_no: '', pension_insurance_no: '', basic_pension_no: '', qualification_acquisition_date: '', qualification_loss_date: '' };
+      this.selectedEmploymentTypeMain = '';
+      this.selectedEmploymentTypeDetail = '';
+      this.subTabIndex = 0;
+      this.formErrorMessage = '';
+    }
   }
 }

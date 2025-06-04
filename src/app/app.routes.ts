@@ -21,5 +21,6 @@ export const routes: Routes = [
   { path: 'salary-management', component: SalaryManagementComponent },
   { path: 'insurance-rate-list', component: InsuranceRateListComponent },
   { path: 'social-insurance-status', component: SocialInsuranceStatusComponent },
+  { path: 'leave-management', loadComponent: () => import('./leave-management/leave-management.component').then(m => m.LeaveManagementComponent) },
   { path: '', redirectTo: 'home', pathMatch: 'full' },
 ];

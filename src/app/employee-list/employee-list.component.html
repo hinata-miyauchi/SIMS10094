@@ -6,9 +6,9 @@
   <h2 class="main-title" *ngIf="mainTabIndex === 1">従業員登録</h2>
   <h2 class="main-title" *ngIf="mainTabIndex === 2">従業員一括登録</h2>
   <div class="tab-bar">
-    <button [class.active]="mainTabIndex === 0" (click)="mainTabIndex = 0">従業員一覧</button>
-    <button [class.active]="mainTabIndex === 1" (click)="mainTabIndex = 1">従業員登録</button>
-    <button [class.active]="mainTabIndex === 2" (click)="mainTabIndex = 2">従業員一括登録</button>
+    <button [class.active]="mainTabIndex === 0" (click)="setMainTabIndex(0)">従業員一覧</button>
+    <button [class.active]="mainTabIndex === 1" (click)="setMainTabIndex(1)">従業員登録</button>
+    <button [class.active]="mainTabIndex === 2" (click)="setMainTabIndex(2)">従業員一括登録</button>
   </div>
   <div class="tab-content">
     <div *ngIf="mainTabIndex === 0">
@@ -25,7 +25,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let emp of employeeList">
+            <tr *ngFor="let emp of employeeList" (click)="openEditModal(emp)">
               <td>{{ emp.employee_no }}</td>
               <td>{{ emp.full_name }}</td>
               <td>{{ emp.status }}</td>
@@ -288,4 +288,11 @@
       </div>
     </div>
   </div>
-</div> 
+</div>
+<app-employee-edit-modal
+  [show]="editModalOpen"
+  [employee]="selectedEmployee"
+  [officeNameList]="officeNameList"
+  (close)="editModalOpen = false"
+  (updated)="onEmployeeUpdated()"
+></app-employee-edit-modal> 
