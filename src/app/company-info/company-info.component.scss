@@ -74,6 +74,12 @@
 .form-fields textarea:hover {
   border: 1.5px solid #a9a6f9;
 }
+.form-fields input[type=number] {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
 .save-btn {
   margin-top: 1.5rem;
   background: linear-gradient(90deg, #4a3aff 60%, #7d7be6 100%);

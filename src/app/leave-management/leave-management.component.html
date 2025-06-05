@@ -7,7 +7,7 @@
     <table class="leave-table">
       <thead>
         <tr>
-          <th>社員番号</th>
+          <th>従業員番号</th>
           <th>氏名</th>
           <th>休職開始日</th>
           <th>休職終了日</th>
@@ -19,16 +19,16 @@
           <tr *ngFor="let leave of leaveList">
             <td>{{ leave.employee_no }}</td>
             <td>{{ leave.full_name }}</td>
-            <td>{{ leave.start }}</td>
-            <td>{{ leave.end }}</td>
-            <td>{{ leave.reason }}</td>
+            <td>{{ leave.leave_start }}</td>
+            <td>{{ leave.leave_end }}</td>
+            <td>{{ leave.leave_reason }}</td>
           </tr>
         </ng-container>
       </tbody>
     </table>
     <ng-template #noData>
       <tr>
-        <td colspan="5" class="no-data-message">該当社員はいません。</td>
+        <td colspan="5" class="no-data-message">該当従業員はいません。</td>
       </tr>
     </ng-template>
   </div>

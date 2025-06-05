@@ -22,7 +22,17 @@ export class LeaveManagementComponent implements OnInit {
     const colRef = query(collection(this.firestore, 'employees'), where('uid', '==', uid));
     const snap = await getDocs(colRef);
     this.leaveList = snap.docs
-      .map(doc => doc.data())
-      .filter(emp => emp['status'] === '休職');
+      .map(doc => {
+        const data = doc.data();
+        return {
+          employee_no: data['employee_no'],
+          full_name: (data['last_name'] || '') + ' ' + (data['first_name'] || ''),
+          leave_start: data['leave_start'],
+          leave_end: data['leave_end'],
+          leave_reason: data['leave_reason'],
+          status: data['status']
+        };
+      })
+      .filter(emp => emp.leave_start || emp.leave_end || emp.leave_reason || emp.status === '休職');
   }
 } 

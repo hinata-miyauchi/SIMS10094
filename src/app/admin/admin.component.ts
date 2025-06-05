@@ -26,7 +26,8 @@ import { CommonModule } from '@angular/common';
 export class AdminComponent {
   menuItems = [
     { icon: '🆕', title: 'アカウント作成', desc: '新しい管理者アカウントを作成します', btn: 'アカウント作成', link: '/admin/account-create' },
-    { icon: '📊', title: '保険料・等級登録', desc: '保険料率や等級情報を登録・編集します', btn: '保険料・等級登録', link: '/admin/insurance-rate-grade' }
+    { icon: '📊', title: '保険料・等級登録', desc: '保険料率や等級情報を登録・編集します', btn: '保険料・等級登録', link: '/admin/insurance-rate-grade' },
+    { icon: '📄', title: '保険料率一覧', desc: '登録済みの保険料率を一覧表示', btn: '保険料率一覧', link: '/admin/insurance-rate-list' },
   ];
   constructor(private router: Router) {}
 

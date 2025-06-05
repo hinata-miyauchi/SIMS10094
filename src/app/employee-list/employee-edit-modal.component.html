@@ -65,7 +65,7 @@
             <label>退社年月日 <span class="required">*</span></label>
             <input type="date" [(ngModel)]="employee.retirement_date" name="retirement_date" autocomplete="off" />
           </div>
-          <div class="form-row" *ngIf="employee.status === '休職'" style="width: 100%">
+          <div class="leave-flex-row" *ngIf="employee.status === '休職'" style="width: 100%">
             <div class="form-group">
               <label>休職開始日 <span class="required">*</span></label>
               <input type="date" [(ngModel)]="employee.leave_start" name="leave_start" autocomplete="off" />
@@ -87,7 +87,7 @@
       </form>
       <form class="company-form" *ngIf="subTabIndex === 2">
         <div class="form-fields">
-          <div class="form-group"><label>社員番号（変更不可） <span class="required">*</span></label><input type="text" [(ngModel)]="employee.employee_no" name="employee_no" pattern="[0-9]*" inputmode="numeric" autocomplete="off" readonly /></div>
+          <div class="form-group"><label>従業員番号（変更不可） <span class="required">*</span></label><input type="text" [(ngModel)]="employee.employee_no" name="employee_no" pattern="[0-9]*" inputmode="numeric" autocomplete="off" readonly /></div>
           <div class="form-group"><label>所属事業所 <span class="required">*</span></label><select [(ngModel)]="employee.office" name="office" autocomplete="off">
             <option *ngFor="let office of officeNameList" [value]="office">{{ office }}</option>
           </select></div>

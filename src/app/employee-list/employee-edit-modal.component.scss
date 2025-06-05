@@ -224,4 +224,21 @@
   white-space: nowrap;
   z-index: 10;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.leave-flex-row {
+  display: flex;
+  gap: 1.2rem;
+  width: 100%;
+}
+.leave-flex-row .form-group {
+  flex: 1 1 220px;
+}
+@media (max-width: 900px) {
+  .leave-flex-row {
+    flex-wrap: wrap;
+  }
+  .leave-flex-row .form-group {
+    min-width: 220px;
+    flex: 1 1 100%;
+  }
 } 
