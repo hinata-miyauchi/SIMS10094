@@ -1,0 +1,143 @@
+.grade-management-container {
+  max-width: 1100px;
+  margin: 2.5rem auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 80, 180, 0.08);
+  font-family: 'Segoe UI', 'Meiryo', sans-serif;
+  padding: 2.5rem 2rem;
+}
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+.home-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.home-btn:hover {
+  background: #1565c0;
+}
+.main-title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #6c63ff;
+  margin-bottom: 24px;
+}
+.grade-form {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.grade-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  color: #1976d2;
+}
+.grade-form input {
+  padding: 6px 10px;
+  border: 1.5px solid #d6d6f7;
+  border-radius: 6px;
+  font-size: 1rem;
+  margin-top: 4px;
+}
+.grade-form button {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 22px;
+}
+.grade-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 15px;
+  min-width: 700px;
+  box-shadow: 0 2px 8px rgba(0,80,180,0.04);
+}
+.grade-table th, .grade-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #e3f0fc;
+  text-align: left;
+}
+.grade-table th {
+  background: #e3f0fc;
+  color: #1976d2;
+  font-weight: 700;
+  font-size: 15px;
+  border-top: 2px solid #1976d2;
+}
+.grade-table tr:last-child td {
+  border-bottom: none;
+}
+.grade-table tbody tr:hover {
+  background: #f0f7ff;
+  transition: background 0.2s;
+}
+.search-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  background: #f8f9fa;
+  padding: 18px 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin-bottom: 24px;
+}
+.search-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.search-group label {
+  font-size: 0.95em;
+  color: #666;
+  margin-bottom: 2px;
+}
+.search-group input,
+.search-group select {
+  padding: 7px 12px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font-size: 1em;
+  min-width: 120px;
+  background: #fff;
+  transition: border 0.2s;
+}
+.search-group input:focus,
+.search-group select:focus {
+  border-color: #4a90e2;
+  outline: none;
+}
+.search-btn {
+  padding: 8px 22px;
+  background: #4a90e2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.05em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 18px;
+}
+.search-btn:hover {
+  background: #357abd;
+}
+.salary-month {
+  /* 必要に応じて幅や余白を調整 */
+} 

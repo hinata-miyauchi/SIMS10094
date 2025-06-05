@@ -14,6 +14,7 @@ import { InsuranceRateGradeComponent } from './admin/insurance-rate-grade/insura
 import { AccountCreateComponent } from './admin/account-create/account-create.component';
 import { AdminAuthComponent } from './admin-auth/admin-auth.component';
 import { AdminInsuranceRateListComponent } from './admin/insurance-rate-list/insurance-rate-list.component';
+import { GradeManagementComponent } from './grade-management/grade-management.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -30,6 +31,7 @@ export const routes: Routes = [
   { path: 'admin/account-create', component: AccountCreateComponent },
   { path: 'admin-auth', component: AdminAuthComponent },
   { path: 'admin/insurance-rate-list', component: AdminInsuranceRateListComponent },
+  { path: 'grade-management', component: GradeManagementComponent },
   { path: 'leave-management', loadComponent: () => import('./leave-management/leave-management.component').then(m => m.LeaveManagementComponent) },
   { path: '', redirectTo: 'home', pathMatch: 'full' },
 ];

@@ -48,7 +48,24 @@
                 </div>
                 <div class="form-group">
                   <label for="employeeCount">従業員数 <span class="required">*</span></label>
-                  <input id="employeeCount" formControlName="employeeCount" type="number" min="0" autocomplete="off" />
+                  <input id="employeeCount" type="number" formControlName="employeeCount" />
+                  <div *ngIf="basicForm.get('employeeCount')?.invalid && (basicForm.get('employeeCount')?.touched || submitted)" class="error-message">
+                    従業員数は必須です。
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="weeklyWorkingHours">週所定労働時間 <span class="required">*</span></label>
+                  <input id="weeklyWorkingHours" type="number" formControlName="weeklyWorkingHours" />
+                  <div *ngIf="basicForm.get('weeklyWorkingHours')?.invalid && (basicForm.get('weeklyWorkingHours')?.touched || submitted)" class="error-message">
+                    週所定労働時間は必須です。
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="monthlyWorkingDays">月所定労働日数 <span class="required">*</span></label>
+                  <input id="monthlyWorkingDays" type="number" formControlName="monthlyWorkingDays" />
+                  <div *ngIf="basicForm.get('monthlyWorkingDays')?.invalid && (basicForm.get('monthlyWorkingDays')?.touched || submitted)" class="error-message">
+                    月所定労働日数は必須です。
+                  </div>
                 </div>
                 <div class="form-group">
                   <label for="address">所在地</label>

@@ -21,7 +21,7 @@
           <div class="form-group"><label>性別 <span class="required">*</span></label><select [(ngModel)]="employee.gender" name="gender" autocomplete="off"><option value="男">男</option><option value="女">女</option><option value="その他">その他</option></select></div>
           <div class="form-group"><label>マイナンバー（変更不可） <span class="required">*</span></label><input type="text" [(ngModel)]="employee.my_number" name="my_number" pattern="[0-9]*" inputmode="numeric" autocomplete="off" readonly /></div>
           <div class="form-group"><label>国籍 <span class="required">*</span></label><select [(ngModel)]="employee.nationality" name="nationality" autocomplete="off"><option value="日本">日本</option><option value="日本以外">日本以外</option></select></div>
-          <div class="form-group"><label>扶養者の有無 <span class="required">*</span></label><select [(ngModel)]="employee.has_dependents" name="has_dependents" autocomplete="off"><option value="true">あり</option><option value="false">なし</option></select></div>
+          <div class="form-group"><label>扶養者の有無 <span class="required">*</span></label><select [(ngModel)]="employee.has_dependents" name="has_dependents" autocomplete="off"><option value="あり">あり</option><option value="なし">なし</option><option value="被扶養者本人">被扶養者本人</option></select></div>
           <div class="form-group"><label>障がいの有無 <span class="required">*</span></label><select [(ngModel)]="employee.has_disability" name="has_disability" autocomplete="off"><option value="true">あり</option><option value="false">なし</option></select></div>
           <div class="form-group"><label>海外勤務の有無 <span class="required">*</span></label><select [(ngModel)]="employee.has_overseas" name="has_overseas" autocomplete="off"><option value="true">あり</option><option value="false">なし</option></select></div>
           <div class="form-group" *ngIf="employee.has_overseas === 'true'">
@@ -99,12 +99,20 @@
             </select>
           </div>
           <div class="form-group"><label>雇用見込み期間 <span class="required">*</span></label><select [(ngModel)]="employee.employment_expectation" name="employment_expectation" autocomplete="off"><option value="2か月超">2か月超</option><option value="2か月以内">2か月以内</option></select></div>
-          <div class="form-group"><label>所定労働時間（h） <span class="required">*</span><span class="tooltip-icon" tabindex="0">？<span class="tooltip-text">1週間あたりの勤務時間(h)</span></span></label><input type="text" [(ngModel)]="employee.scheduled_working_hours" name="scheduled_working_hours" pattern="[0-9]*" inputmode="numeric" autocomplete="off" /></div>
-          <div class="form-group"><label>見込み月収（円） <span class="required">*</span><span class="tooltip-icon" tabindex="0">？
+          <div class="form-group"><label>所定労働時間（h） <span class="required">*</span><span class="tooltip-icon" tabindex="0">？<span class="tooltip-text">1週間あたりの勤務時間（h）</span></span></label><input type="number" [(ngModel)]="employee.scheduled_working_hours" name="scheduled_working_hours" min="0" step="any" autocomplete="off" required /></div>
+          <div class="form-group">
+            <label>所定労働日数（日） <span class="required">*</span>
+              <span class="tooltip-icon" tabindex="0">？
+                <span class="tooltip-text">1週間あたりの勤務日数（日）</span>
+              </span>
+            </label>
+            <input type="number" [(ngModel)]="employee.scheduled_working_days" name="scheduled_working_days" min="0" step="1" autocomplete="off" required />
+          </div>
+          <div class="form-group"><label>見込み固定的賃金（円） <span class="required">*</span><span class="tooltip-icon" tabindex="0">？
             <span class="tooltip-text">
-              基本給＋毎月固定支給手当<br>
-              （残業手当、賞与などは含まれない）で算出を行う
-            </span></span></label><input type="text" [(ngModel)]="employee.expected_monthly_income" name="expected_monthly_income" pattern="[0-9]*" inputmode="numeric" autocomplete="off" /></div>
+              基本給、通勤手当（毎月一定額支給の場合）、住宅手当、<br>
+              役職手当などの基本毎月変動しない手当の合計
+            </span></span></label><input type="number" [(ngModel)]="employee.expected_monthly_income" name="expected_monthly_income" min="0" step="1" autocomplete="off" required /></div>
         </div>
       </form>
       <form class="company-form" *ngIf="subTabIndex === 3">

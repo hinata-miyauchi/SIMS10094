@@ -2,7 +2,9 @@
   <div class="top-bar">
     <button class="home-btn" routerLink="/">ホームへ戻る</button>
   </div>
-  <h2>給与管理</h2>
+  <h2 class="main-title">
+    {{ tabIndex === 0 ? '給与一覧' : tabIndex === 1 ? '給与登録' : '給与一括登録' }}
+  </h2>
   <!-- メインタブバー -->
   <div class="tab-bar">
     <button [class.active]="tabIndex === 0" (click)="setTab(0)">給与一覧</button>
@@ -11,7 +13,6 @@
   </div>
   <div class="tab-content">
     <ng-container *ngIf="tabIndex === 0">
-      <h3>給与一覧</h3>
       <form class="search-form" (submit)="$event.preventDefault()">
         <div class="form-fields">
           <div class="form-group">
@@ -31,79 +32,99 @@
           </div>
         </div>
       </form>
-      <table class="modern-employee-table salary-table">
-        <thead>
-          <tr>
-            <th>従業員番号</th>
-            <th>氏名</th>
-            <th>給与年月</th>
-            <th>勤務日数</th>
-            <th>勤務時間</th>
-            <th>給与</th>
-            <th>賞与</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of filteredSalaryList">
-            <td>{{item.employeeNo}}</td>
-            <td>{{item.employeeName}}</td>
-            <td>{{item.salaryMonth}}</td>
-            <td>{{item.workDays}}</td>
-            <td>{{item.workHours}}</td>
-            <td>{{item.salary | number}}</td>
-            <td>{{item.bonus | number}}</td>
-          </tr>
-          <tr *ngIf="filteredSalaryList.length === 0">
-            <td colspan="6" style="text-align:center; color:#888;">該当データがありません</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="employee-table-wrapper">
+        <table class="employee-table salary-table">
+          <thead>
+            <tr>
+              <th>従業員番号</th>
+              <th>氏名</th>
+              <th>給与年月</th>
+              <th>勤務日数</th>
+              <th>勤務時間</th>
+              <th>給与</th>
+              <th>賞与</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of filteredSalaryList">
+              <td>{{item.employeeNo}}</td>
+              <td>{{item.employeeName}}</td>
+              <td>{{item.salaryMonth}}</td>
+              <td>{{item.workDays}}</td>
+              <td>{{item.workHours}}</td>
+              <td>{{item.salary | number}}</td>
+              <td>{{item.bonus != null && item.bonus !== '' ? (item.bonus | number) : 0}}</td>
+            </tr>
+            <tr *ngIf="filteredSalaryList.length === 0">
+              <td colspan="7" style="text-align:center; color:#888;">該当データがありません</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </ng-container>
     <ng-container *ngIf="tabIndex === 1">
-      <div class="salary-header-row">
-        <h3>給与登録</h3>
-        <div class="error-message" *ngIf="employeeError">{{employeeError}}</div>
-      </div>
-      <form [formGroup]="salaryForm" (ngSubmit)="onSubmit()" class="salary-form">
+      <div *ngIf="employeeError" class="error">{{employeeError}}</div>
+      <button class="register-btn" type="button" (click)="onSubmit()">登録</button>
+      <form [formGroup]="salaryForm" class="company-form">
         <div class="form-fields">
           <div class="form-group">
-            <label>従業員番号</label>
+            <label>従業員番号 <span class="required">*</span></label>
             <input formControlName="employeeNo" type="text" required />
           </div>
           <div class="form-group">
-            <label>氏名</label>
-            <input formControlName="fullName" readonly />
+            <label>氏名（自動表示） <span class="required">*</span></label>
+            <input formControlName="fullName" readonly placeholder="自動で表示されます" />
           </div>
           <div class="form-group">
-            <label>給与年月</label>
+            <label>見込み固定給（自動表示）</label>
+            <input formControlName="expectedFixedSalary" readonly placeholder="自動で表示されます" />
+          </div>
+          <div class="form-group">
+            <label>給与年月 <span class="required">*</span></label>
             <input formControlName="salaryMonth" type="month" required />
           </div>
           <div class="form-group">
-            <label>勤務日数</label>
+            <label>勤務日数 <span class="required">*</span></label>
             <input formControlName="workDays" type="number" min="0" required />
           </div>
           <div class="form-group">
-            <label>勤務時間</label>
+            <label>勤務時間 <span class="required">*</span></label>
             <input formControlName="workHours" type="number" min="0" required />
           </div>
           <div class="form-group">
-            <label>給与</label>
-            <input formControlName="salary" type="number" min="0" required />
+            <label>固定的賃金 <span class="required">*</span>
+              <span class="tooltip-icon" tabindex="0">？
+                <span class="tooltip-text">
+                  基本給、通勤手当（毎月一定額支給の場合）、住宅手当、<br>
+                  役職手当などの基本毎月変動しない手当の合計
+                </span>
+              </span>
+            </label>
+            <input formControlName="fixedSalary" type="number" min="0" required />
           </div>
           <div class="form-group">
-            <label>賞与有無</label>
+            <label>変動的賃金 <span class="required">*</span>
+              <span class="tooltip-icon" tabindex="0">？
+                <span class="tooltip-text">
+                  時間外手当、深夜・休日手当、通勤手当（出勤日数などによって変動する場合）、<br>
+                  歩合給（インセンティブ）、その他手当（一時的な支給）の合計
+                </span>
+              </span>
+            </label>
+            <input formControlName="variableSalary" type="number" min="0" required />
+          </div>
+          <div class="form-group">
+            <label>賞与有無 <span class="required">*</span></label>
             <select formControlName="hasBonus" required>
-              <option value="">選択してください</option>
               <option value="true">あり</option>
               <option value="false">なし</option>
             </select>
           </div>
           <div class="form-group" *ngIf="salaryForm.get('hasBonus')?.value === 'true'">
-            <label>賞与額</label>
+            <label>賞与額 <span class="required">*</span></label>
             <input formControlName="bonus" type="number" min="0" />
           </div>
         </div>
-        <button type="submit" [disabled]="salaryForm.invalid || !salaryForm.get('fullName')?.value || (salaryForm.get('hasBonus')?.value === 'true' && !salaryForm.get('bonus')?.value)" class="register-btn">登録</button>
       </form>
     </ng-container>
     <ng-container *ngIf="tabIndex === 2">

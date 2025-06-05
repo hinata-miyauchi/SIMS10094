@@ -1,0 +1,44 @@
+<div class="grade-management-container">
+  <div class="top-bar">
+    <button class="home-btn" (click)="goHome()">ホームへ戻る</button>
+  </div>
+  <h2 class="main-title">等級管理</h2>
+  <div class="search-bar">
+    <div class="search-group">
+      <label for="searchEmployeeNo">従業員番号で検索</label>
+      <input id="searchEmployeeNo" [(ngModel)]="searchEmployeeNo" name="searchEmployeeNo" type="text" placeholder="例: 1001" autocomplete="off" />
+    </div>
+    <div class="search-group">
+      <label for="searchSalaryMonth">対象年月</label>
+      <input id="searchSalaryMonth" [(ngModel)]="searchSalaryMonth" name="searchSalaryMonth" type="month" class="salary-month" />
+    </div>
+    <button class="search-btn" (click)="onSearch()">検索</button>
+    <button class="search-btn" style="background:#aaa;" type="button" (click)="onClearSearch()">クリア</button>
+  </div>
+  <table class="grade-table">
+    <thead>
+      <tr>
+        <th>従業員番号</th>
+        <th>対象年月</th>
+        <th>従業員名</th>
+        <th>見込み固定給</th>
+        <th>固定的賃金</th>
+        <th>等級</th>
+        <th>差額</th>
+        <th>差一致</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of salaryRows">
+        <td>{{row.employeeNo}}</td>
+        <td>{{row.salaryMonth}}</td>
+        <td>{{row.employeeName}}</td>
+        <td>{{row.expectedFixedSalary | number}}</td>
+        <td>{{row.fixedSalary | number}}</td>
+        <td>{{row.grade}}</td>
+        <td>{{row.diff | number}}</td>
+        <td>{{row.match ? '〇' : '×'}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div> 

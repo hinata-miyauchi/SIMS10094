@@ -41,7 +41,9 @@ export class CompanyInfoComponent implements OnInit {
         established: [''],
         business: [''],
         capital: [''],
-        employeeCount: ['', Validators.required]
+        employeeCount: ['', Validators.required],
+        weeklyWorkingHours: ['', Validators.required],
+        monthlyWorkingDays: ['', Validators.required]
       }),
       // 事業所情報
       officesForm: this.fb.array([
@@ -152,8 +154,23 @@ export class CompanyInfoComponent implements OnInit {
     this.submitted = true;
     if (this.companyForm.invalid) {
       const fields = this.invalidRequiredFields;
-      this.message = `必須項目を入力してください：\n${fields.join('、')}`
+      this.message = fields.length > 0 ? fields.join('、') + 'が未入力です' : '必須項目が未入力です';
+      return;
     }
+    this.loading = true;
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) {
+      this.message = 'ログイン情報が取得できません。再度ログインしてください。';
+      this.loading = false;
+      return;
+    }
+    const ref = doc(this.firestore, 'company', 'main');
+    const data = { ...this.companyForm.value, uid };
+    await setDoc(ref, data, { merge: true });
+    this.message = '保存しました。';
+    this.setupAutoClearMessage();
+    this.loading = false;
+    this.submitted = false;
   }
 
   get invalidRequiredFields(): string[] {
@@ -162,6 +179,8 @@ export class CompanyInfoComponent implements OnInit {
     if (this.basicForm.get('name')?.invalid) fields.push('会社名');
     if (this.basicForm.get('companyNo')?.invalid) fields.push('法人番号');
     if (this.basicForm.get('employeeCount')?.invalid) fields.push('従業員数');
+    if (this.basicForm.get('weeklyWorkingHours')?.invalid) fields.push('週所定労働時間');
+    if (this.basicForm.get('monthlyWorkingDays')?.invalid) fields.push('月所定労働日数');
     // 事業所情報（最初の事業所のみチェック）
     const office = this.officesForm.at(0);
     if (office) {

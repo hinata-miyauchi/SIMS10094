@@ -90,12 +90,13 @@
                   <option value="日本">日本</option>
                   <option value="日本以外">日本以外</option>
                 </select>
-              </div>
-              <div class="form-group">
+      </div>
+      <div class="form-group">
                 <label>扶養者の有無 <span class="required">*</span></label>
                 <select name="has_dependents" [(ngModel)]="basicForm.has_dependents" autocomplete="off">
-                  <option value="true">あり</option>
-                  <option value="false">なし</option>
+                  <option value="あり">あり</option>
+                  <option value="なし">なし</option>
+                  <option value="被扶養者本人">被扶養者本人</option>
                 </select>
       </div>
       <div class="form-group">
@@ -223,18 +224,28 @@
       <div class="form-group">
                 <label>所定労働時間（h） <span class="required">*</span>
                   <span class="tooltip-icon" tabindex="0">？
-                    <span class="tooltip-text">1週間あたりの勤務時間(h)</span>
+                    <span class="tooltip-text">1週間あたりの勤務時間（h）</span>
                   </span>
                 </label>
-                <input type="text" name="scheduled_working_hours" [(ngModel)]="workForm.scheduled_working_hours" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(workForm, 'scheduled_working_hours')" autocomplete="off" />
+                <input type="number" [(ngModel)]="workForm.scheduled_working_hours" name="scheduled_working_hours" min="0" step="any" autocomplete="off" required />
       </div>
       <div class="form-group">
-                <label>見込み月収（円） <span class="required">*</span>
+                <label>所定労働日数（日） <span class="required">*</span>
                   <span class="tooltip-icon" tabindex="0">？
-                    <span class="tooltip-text">基本給＋毎月固定支給手当（残業手当、賞与などは含まれない）</span>
+                    <span class="tooltip-text">1週間あたりの勤務日数（日）</span>
                   </span>
                 </label>
-                <input type="text" name="expected_monthly_income" [(ngModel)]="workForm.expected_monthly_income" pattern="[0-9]*" inputmode="numeric" (input)="onInputNumberOnly(workForm, 'expected_monthly_income')" autocomplete="off" />
+                <input type="number" [(ngModel)]="workForm.scheduled_working_days" name="scheduled_working_days" min="0" step="1" autocomplete="off" required />
+              </div>
+              <div class="form-group">
+                <label>見込み固定的賃金（円） <span class="required">*</span>
+                  <span class="tooltip-icon" tabindex="0">？
+                    <span class="tooltip-text">
+                      基本給、通勤手当（毎月一定額支給の場合）、住宅手当、<br>
+                      役職手当などの基本毎月変動しない手当の合計</span>
+                  </span>
+                </label>
+                <input type="number" [(ngModel)]="workForm.expected_monthly_income" name="expected_monthly_income" min="0" step="1" autocomplete="off" required />
               </div>
             </div>
           </form>

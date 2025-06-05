@@ -52,10 +52,12 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
     this.salaryForm = this.fb.group({
       employeeNo: ['', Validators.required],
       fullName: [''],
+      expectedFixedSalary: [''],
       salaryMonth: ['', Validators.required],
       workDays: ['', Validators.required],
       workHours: ['', Validators.required],
-      salary: ['', Validators.required],
+      fixedSalary: ['', Validators.required],
+      variableSalary: ['', Validators.required],
       hasBonus: ['', Validators.required],
       bonus: ['']
     });
@@ -76,11 +78,21 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
     this.salaryForm.get('employeeNo')?.valueChanges.subscribe(empNo => {
       const emp = this.employees.find(e => e.employee_no === empNo);
       this.salaryForm.get('fullName')?.setValue(emp ? emp.name : '');
+      // 見込み固定給も自動セット
+      if (emp) {
+        // Firestoreから従業員詳細を取得してexpected_monthly_incomeをセット
+        getDocs(collection(this.firestore, 'employees')).then(snap => {
+          const empDoc = snap.docs.find(d => d.data()['employee_no'] === empNo);
+          this.salaryForm.get('expectedFixedSalary')?.setValue(empDoc ? empDoc.data()['expected_monthly_income'] || '' : '');
+        });
+      } else {
+        this.salaryForm.get('expectedFixedSalary')?.setValue('');
+      }
       // 入力が空欄、または4桁未満ならエラー非表示
       if (!empNo) {
         this.employeeError = '';
       } else if (empNo.length === 4) {
-        this.employeeError = emp ? '' : '該当する従業員が居ないため従業員登録を行ってください';
+        this.employeeError = emp ? '' : '該当する従業員が登録されていないため従業員登録を行ってください';
       } else {
         this.employeeError = '';
       }
@@ -107,17 +119,40 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
   }
 
   async onSubmit() {
+    // 必須項目の未入力チェック
+    const requiredFields = [
+      { key: 'employeeNo', label: '従業員番号' },
+      { key: 'salaryMonth', label: '給与年月' },
+      { key: 'workDays', label: '勤務日数' },
+      { key: 'workHours', label: '勤務時間' },
+      { key: 'fixedSalary', label: '固定的賃金' },
+      { key: 'variableSalary', label: '変動的賃金' },
+      { key: 'hasBonus', label: '賞与有無' }
+    ];
+    const formValue = this.salaryForm.value;
+    const missingFields = requiredFields.filter(f => !formValue[f.key] && formValue[f.key] !== 0).map(f => f.label);
+    // 賞与有無が「あり」の場合は賞与額も必須
+    if (formValue.hasBonus === 'true' && (!formValue.bonus && formValue.bonus !== 0)) {
+      missingFields.push('賞与額');
+    }
+    if (missingFields.length > 0) {
+      this.employeeError = missingFields.join('、') + 'が未入力です';
+      return;
+    }
+    this.employeeError = '';
     if (this.salaryForm.valid) {
-      const formValue = this.salaryForm.value;
       const uid = this.auth.currentUser?.uid;
       if (!uid) return;
       const data = {
         employee_no: formValue.employeeNo,
         full_name: formValue.fullName,
+        expected_fixed_salary: formValue.expectedFixedSalary,
         salary_date: formValue.salaryMonth,
         work_days: formValue.workDays,
         work_hours: formValue.workHours,
-        salary: formValue.salary,
+        fixed_salary: formValue.fixedSalary,
+        variable_salary: formValue.variableSalary,
+        salary: (Number(formValue.fixedSalary) || 0) + (Number(formValue.variableSalary) || 0),
         has_bonus: formValue.hasBonus,
         bonus: formValue.bonus,
         uid
@@ -210,9 +245,12 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
     window.URL.revokeObjectURL(url);
   }
 
-  setTab(index: number) {
+  async setTab(index: number) {
     this.tabIndex = index;
     this.importMessage = '';
+    if (index === 0) {
+      await this.fetchSalaryList();
+    }
   }
 
   ngOnDestroy() {
@@ -223,5 +261,25 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
     const onlyNum = event.target.value.replace(/[^0-9]/g, '');
     this.searchSalaryYear = onlyNum;
     event.target.value = onlyNum;
+  }
+
+  async fetchSalaryList() {
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) return;
+    const q = query(collection(this.firestore, 'salaries'), where('uid', '==', uid));
+    const salarySnap = await getDocs(q);
+    this.salaryList = salarySnap.docs.map(doc => {
+      const data = doc.data();
+      return {
+        employeeNo: data['employee_no'] ?? '',
+        employeeName: data['full_name'] ?? '',
+        salaryMonth: data['salary_date'] ?? '',
+        workDays: data['work_days'] ?? '',
+        workHours: data['work_hours'] ?? '',
+        salary: data['salary'] ?? '',
+        hasBonus: data['has_bonus'] ?? '',
+        bonus: data['bonus'] ?? ''
+      };
+    });
   }
 } 

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Auth, signOut } from '@angular/fire/auth';
+import { Auth, signOut, onAuthStateChanged } from '@angular/fire/auth';
 import { Router, RouterLink } from '@angular/router';
 
 @Component({
@@ -12,13 +12,13 @@ import { Router, RouterLink } from '@angular/router';
     <div class="header-bar">
       <div class="user-info-bar">
         <span class="user-icon">👤</span>
-        <span class="user-name">{{ displayName || 'ユーザー' }}</span>
+        <span class="user-name">{{ displayName }}</span>
       </div>
       <div class="admin-btn-bar">
         <button class="admin-btn" (click)="onLogout()">ログアウト</button>
       </div>
     </div>
-    <h2>ホーム（管理者向け）</h2>
+    <h2>ホーム </h2>
     <div class="home-grid">
       <div class="home-card" *ngFor="let item of menuItems">
         <div class="icon">{{item.icon}}</div>
@@ -38,11 +38,14 @@ export class HomeComponent {
     { icon: '🛡️', title: '社会保険情報', desc: '健康保険・介護保険・厚生年金の加入状況一覧', btn: '社会保険状況', link: '/social-insurance-status' },
     { icon: '🏢', title: '会社情報', desc: '会社の基本情報を登録・編集', btn: '会社情報', link: '/company-info' },
     { icon: '📄', title: '保険料率一覧', desc: '登録済みの保険料率を一覧表示', btn: '保険料率一覧', link: '/insurance-rate-list' },
-    { icon: '🛌', title: '休業情報管理', desc: '従業員の休業情報の登録・編集・一覧', btn: '休業管理', link: '/leave-management' }
+    { icon: '🛌', title: '休業情報管理', desc: '従業員の休業情報の登録・編集・一覧', btn: '休業管理', link: '/leave-management' },
+    { icon: '📝', title: '等級管理', desc: '等級の一覧・追加・編集', btn: '等級管理', link: '/grade-management' }
   ];
   displayName: string | null = null;
   constructor(private auth: Auth, private router: Router) {
-    this.displayName = this.auth.currentUser?.displayName || this.auth.currentUser?.email || null;
+    onAuthStateChanged(this.auth, (user) => {
+      this.displayName = user?.displayName || user?.email || null;
+    });
   }
 
   async onLogout() {
