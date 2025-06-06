@@ -179,8 +179,8 @@ export class CompanyInfoComponent implements OnInit {
     if (this.basicForm.get('name')?.invalid) fields.push('会社名');
     if (this.basicForm.get('companyNo')?.invalid) fields.push('法人番号');
     if (this.basicForm.get('employeeCount')?.invalid) fields.push('従業員数');
-    if (this.basicForm.get('weeklyWorkingHours')?.invalid) fields.push('週所定労働時間');
-    if (this.basicForm.get('monthlyWorkingDays')?.invalid) fields.push('月所定労働日数');
+    if (this.basicForm.get('weeklyWorkingHours')?.invalid) fields.push('週の所定労働時間');
+    if (this.basicForm.get('monthlyWorkingDays')?.invalid) fields.push('月の所定労働日数');
     // 事業所情報（最初の事業所のみチェック）
     const office = this.officesForm.at(0);
     if (office) {

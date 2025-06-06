@@ -141,7 +141,7 @@ export class EmployeeListComponent implements OnInit {
       '社員番号','姓','名','姓カナ','名カナ','生年月日','性別','国籍','扶養者の有無','障がいの有無','海外勤務の有無',
       '海外勤務時の雇用形態','社会保障協定国であるか','赴任開始日','赴任終了日（予定日）',
       '在籍状況','入社年月日','退社年月日',
-      '所属事業所','雇用形態','雇用見込み','所定労働時間','所定労働日数','見込み固定的賃金',
+      '所属事業所','雇用形態','雇用見込み','週の所定労働時間','月の所定労働日数','見込み固定的賃金',
       '現住所','電話番号',
       '健康保険被保険者番号','厚生年金被保険者番号','基礎年金番号','資格取得日','資格喪失日'
     ];
@@ -154,7 +154,7 @@ export class EmployeeListComponent implements OnInit {
       '社員番号','姓','名','姓カナ','名カナ','生年月日','性別','国籍','扶養者の有無','障がいの有無','海外勤務の有無',
       '海外勤務時の雇用形態','社会保障協定国であるか','赴任開始日','赴任終了日（予定日）',
       '在籍状況','入社年月日','退社年月日',
-      '所属事業所','雇用形態','雇用見込み','所定労働時間','所定労働日数','見込み固定的賃金',
+      '所属事業所','雇用形態','雇用見込み','週の所定労働時間','月の所定労働日数','見込み固定的賃金',
       '現住所','電話番号',
       '健康保険被保険者番号','厚生年金被保険者番号','基礎年金番号','資格取得日','資格喪失日'
     ];
@@ -188,7 +188,7 @@ export class EmployeeListComponent implements OnInit {
       employee_no: '社員番号', last_name: '姓', first_name: '名', last_name_kana: '姓カナ', first_name_kana: '名カナ',
       birth_date: '生年月日', gender: '性別', nationality: '国籍', has_dependents: '扶養者の有無', has_disability: '障がいの有無',
       has_overseas: '海外勤務の有無', status: '在籍状況', hire_date: '入社年月日', office: '所属事業所', employment_type: '雇用形態',employment_type_detail: '区分',my_number: 'マイナンバー',
-      employment_expectation: '雇用見込み', scheduled_working_hours: '所定労働時間', scheduled_working_days: '所定労働日数', expected_monthly_income: '見込み固定的賃金',
+      employment_expectation: '雇用見込み', scheduled_working_hours: '週の所定労働時間', scheduled_working_days: '月の所定労働日数', expected_monthly_income: '見込み固定的賃金',
       address: '現住所', phone_number: '電話番号', overseas_employment_type: '海外勤務時の雇用形態', is_social_security_agreement: '社会保障協定国であるか', overseas_assignment_start: '赴任開始日', retirement_date: '退社年月日'
     };
     return map[field] || field;
@@ -359,13 +359,6 @@ export class EmployeeListComponent implements OnInit {
       full_name: (this.basicForm.last_name || '') + ' ' + (this.basicForm.first_name || ''),
       full_name_kana: (this.basicForm.last_name_kana || '') + ' ' + (this.basicForm.first_name_kana || '')
     };
-    // 雇用形態2段階選択の連結
-    if (this.selectedEmploymentTypeMain) {
-      employee.employment_type = this.selectedEmploymentTypeMain;
-      if (this.selectedEmploymentTypeMain === 'パート・アルバイト' || this.selectedEmploymentTypeMain === '有給インターン') {
-        employee.employment_type += `（${this.selectedEmploymentTypeDetail}）`;
-      }
-    }
     // バリデーション
     const errors = this.validateEmployee(employee);
     if (errors.length > 0) {
@@ -374,7 +367,11 @@ export class EmployeeListComponent implements OnInit {
     }
     this.formErrorMessage = '';
     // Firestore登録処理
-    await setDoc(doc(db, 'employees', employee.employee_no), employee)
+    const employeeToSave: any = { ...employee };
+    if (employeeToSave.scheduled_working_hours !== undefined) employeeToSave.scheduled_working_hours = Number(employeeToSave.scheduled_working_hours);
+    if (employeeToSave.scheduled_working_days !== undefined) employeeToSave.scheduled_working_days = Number(employeeToSave.scheduled_working_days);
+    if (employeeToSave.expected_monthly_income !== undefined) employeeToSave.expected_monthly_income = Number(employeeToSave.expected_monthly_income);
+    await setDoc(doc(db, 'employees', employee.employee_no), employeeToSave)
       .then(() => {
         this.formErrorMessage = '登録が完了しました。';
         this.setupAutoClearMessage();

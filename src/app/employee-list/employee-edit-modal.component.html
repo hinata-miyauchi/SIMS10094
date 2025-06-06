@@ -93,17 +93,18 @@
           </select></div>
           <div class="form-group"><label>雇用形態 <span class="required">*</span></label><select [(ngModel)]="employee.employment_type" name="employment_type" autocomplete="off"><option value="正社員">正社員</option><option value="契約社員">契約社員</option><option value="嘱託社員">嘱託社員</option><option value="パート・アルバイト">パート・アルバイト</option><option value="有給インターン">有給インターン</option><option value="個人事業主">個人事業主</option></select></div>
           <div class="form-group" *ngIf="employee.employment_type === 'パート・アルバイト' || employee.employment_type === '有給インターン'">
-            <label>区分 <span class="required">*</span></label>
-            <select [(ngModel)]="employee.employment_type_detail" name="employment_type_detail" autocomplete="off">
-              <option *ngFor="let detail of employee.employmentTypeDetail" [value]="detail">{{ detail }}</option>
+            <label>区分</label>
+            <select [(ngModel)]="employee.employment_type_detail" name="employment_type_detail">
+              <option value="">選択してください</option>
+              <option *ngFor="let d of employmentTypeDetail" [value]="d">{{d}}</option>
             </select>
           </div>
           <div class="form-group"><label>雇用見込み期間 <span class="required">*</span></label><select [(ngModel)]="employee.employment_expectation" name="employment_expectation" autocomplete="off"><option value="2か月超">2か月超</option><option value="2か月以内">2か月以内</option></select></div>
-          <div class="form-group"><label>所定労働時間（h） <span class="required">*</span><span class="tooltip-icon" tabindex="0">？<span class="tooltip-text">1週間あたりの勤務時間（h）</span></span></label><input type="number" [(ngModel)]="employee.scheduled_working_hours" name="scheduled_working_hours" min="0" step="any" autocomplete="off" required /></div>
+          <div class="form-group"><label>週の所定労働時間（h） <span class="required">*</span><span class="tooltip-icon" tabindex="0">？<span class="tooltip-text">1週間あたりの勤務時間（h）</span></span></label><input type="number" [(ngModel)]="employee.scheduled_working_hours" name="scheduled_working_hours" min="0" step="any" autocomplete="off" required /></div>
           <div class="form-group">
-            <label>所定労働日数（日） <span class="required">*</span>
+            <label>月の所定労働日数（日） <span class="required">*</span>
               <span class="tooltip-icon" tabindex="0">？
-                <span class="tooltip-text">1週間あたりの勤務日数（日）</span>
+                <span class="tooltip-text">1か月あたりの勤務日数（日）</span>
               </span>
             </label>
             <input type="number" [(ngModel)]="employee.scheduled_working_days" name="scheduled_working_days" min="0" step="1" autocomplete="off" required />

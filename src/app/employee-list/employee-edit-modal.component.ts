@@ -18,6 +18,10 @@ export class EmployeeEditModalComponent {
   @Output() close = new EventEmitter<void>();
   @Output() updated = new EventEmitter<void>();
   @Input() officeNameList: string[] = [];
+  @Input() employmentTypeDetail: string[] = [
+    '非学生・休学/夜間/通信制学生',
+    '昼間部学生'
+  ];
   formErrorMessage = '';
   subTabIndex = 0;
   loading = false;
@@ -38,6 +42,10 @@ export class EmployeeEditModalComponent {
       return;
     }
     this.employee.uid = uid;
+    // 数値項目をNumber型に変換
+    if (this.employee.scheduled_working_hours !== undefined) this.employee.scheduled_working_hours = Number(this.employee.scheduled_working_hours);
+    if (this.employee.scheduled_working_days !== undefined) this.employee.scheduled_working_days = Number(this.employee.scheduled_working_days);
+    if (this.employee.expected_monthly_income !== undefined) this.employee.expected_monthly_income = Number(this.employee.expected_monthly_income);
     this.loading = true;
     await setDoc(doc(this.firestore, 'employees', this.employee.employee_no), this.employee, { merge: true });
     this.loading = false;
@@ -101,8 +109,8 @@ export class EmployeeEditModalComponent {
       employee_no: '社員番号', last_name: '姓', first_name: '名', last_name_kana: '姓（カナ）', first_name_kana: '名（カナ）',
       birth_date: '生年月日', gender: '性別', nationality: '国籍', has_dependents: '扶養者の有無', has_disability: '障がいの有無',
       has_overseas: '海外勤務の有無', status: '在籍状況', hire_date: '入社年月日', retirement_date: '退社年月日', office: '所属事業所',
-      employment_type: '雇用形態', employment_type_detail: '区分', employment_expectation: '雇用見込み', scheduled_working_hours: '所定労働時間',
-      scheduled_working_days: '所定労働日数', expected_monthly_income: '見込み固定的賃金', address: '現住所', phone_number: '電話番号', my_number: 'マイナンバー',
+      employment_type: '雇用形態', employment_type_detail: '区分', employment_expectation: '雇用見込み', scheduled_working_hours: '週の所定労働時間',
+      scheduled_working_days: '月の所定労働日数', expected_monthly_income: '見込み固定的賃金', address: '現住所', phone_number: '電話番号', my_number: 'マイナンバー',
       health_insurance_no: '健康保険被保険者番号', pension_insurance_no: '厚生年金被保険者番号', basic_pension_no: '基礎年金番号',
       qualification_acquisition_date: '資格取得日', qualification_loss_date: '資格喪失日', overseas_employment_type: '海外勤務時の雇用形態', is_social_security_agreement: '社会保障協定国であるか', overseas_assignment_start: '赴任開始日', overseas_assignment_end: '赴任終了日（予定日）'
     };

@@ -222,7 +222,7 @@
                 </select>
       </div>
       <div class="form-group">
-                <label>所定労働時間（h） <span class="required">*</span>
+                <label>週の所定労働時間（h） <span class="required">*</span>
                   <span class="tooltip-icon" tabindex="0">？
                     <span class="tooltip-text">1週間あたりの勤務時間（h）</span>
                   </span>
@@ -230,9 +230,9 @@
                 <input type="number" [(ngModel)]="workForm.scheduled_working_hours" name="scheduled_working_hours" min="0" step="any" autocomplete="off" required />
       </div>
       <div class="form-group">
-                <label>所定労働日数（日） <span class="required">*</span>
+                <label>月の所定労働日数（日） <span class="required">*</span>
                   <span class="tooltip-icon" tabindex="0">？
-                    <span class="tooltip-text">1週間あたりの勤務日数（日）</span>
+                    <span class="tooltip-text">1か月あたりの勤務日数（日）</span>
                   </span>
                 </label>
                 <input type="number" [(ngModel)]="workForm.scheduled_working_days" name="scheduled_working_days" min="0" step="1" autocomplete="off" required />

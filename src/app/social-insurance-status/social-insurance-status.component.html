@@ -3,6 +3,11 @@
     <button class="home-btn" (click)="goHome()">ホームへ戻る</button>
   </div>
   <h2 class="main-title">社会保険加入状況一覧</h2>
+  <div class="search-bar" style="margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+    <input type="text" [(ngModel)]="searchEmployeeNo" placeholder="従業員番号で検索" style="padding: 0.4em 1em; border-radius: 4px; border: 1px solid #bbb; font-size: 1em; width: 180px;" (keyup.enter)="onSearchEmployeeNo()" (input)="onSearchEmployeeNo()">
+    <button (click)="onSearchEmployeeNo()" style="padding: 0.4em 1.2em; border-radius: 4px; border: none; background: #1976d2; color: #fff; font-size: 1em; cursor: pointer;">検索</button>
+    <button (click)="onClearSearch()" style="padding: 0.4em 1.2em; border-radius: 4px; border: none; background: #e0e0e0; color: #222; font-size: 1em; cursor: pointer;">クリア</button>
+  </div>
   <table class="social-insurance-table">
     <thead>
       <tr>
@@ -12,23 +17,44 @@
         <th>健康保険</th>
         <th>介護保険</th>
         <th>厚生年金</th>
-        <th>資格取得日</th>
-        <th>資格喪失日</th>
         <th>備考</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let s of statuses">
+      <tr *ngFor="let s of pagedStatuses" (click)="onRowClick(s)" style="cursor:pointer;">
         <td>{{s.employeeNo}}</td>
         <td>{{s.name}}</td>
         <td>{{s.status}}</td>
         <td><span [class.joined]="s.healthInsurance">{{s.healthInsurance ? '●' : '×'}}</span></td>
         <td><span [class.joined]="s.nursingCareInsurance">{{s.nursingCareInsurance ? '●' : '×'}}</span></td>
         <td><span [class.joined]="s.pension">{{s.pension ? '●' : '×'}}</span></td>
-        <td>{{s.acquisitionDate}}</td>
-        <td>{{s.lossDate || ''}}</td>
         <td>{{s.remarks || ''}}</td>
       </tr>
     </tbody>
   </table>
-</div> 
+  <div class="pagination" *ngIf="totalPages > 1" style="margin-top: 1.5rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem;">
+    <button (click)="prevPage()" [disabled]="currentPage === 1" style="padding: 0.3em 1em; border-radius: 4px; border: none; background: #e0e0e0; color: #222; font-size: 1em; cursor: pointer;">前へ</button>
+    <ng-container *ngFor="let page of [].constructor(totalPages); let i = index">
+      <button (click)="goToPage(i+1)" [disabled]="currentPage === (i+1)" [ngClass]="{'active-page': currentPage === (i+1)}" style="padding: 0.3em 0.9em; border-radius: 4px; border: none; background: #f5f5f5; color: #222; font-size: 1em; cursor: pointer; margin: 0 2px;">{{i+1}}</button>
+    </ng-container>
+    <button (click)="nextPage()" [disabled]="currentPage === totalPages" style="padding: 0.3em 1em; border-radius: 4px; border: none; background: #e0e0e0; color: #222; font-size: 1em; cursor: pointer;">次へ</button>
+  </div>
+  <app-social-insurance-status-edit-modal
+    *ngIf="editModalOpen && editTarget"
+    [employeeNo]="editTarget.employeeNo"
+    [name]="editTarget.name"
+    [healthInsurance]="editTarget.healthInsurance"
+    [nursingCareInsurance]="editTarget.nursingCareInsurance"
+    [pension]="editTarget.pension"
+    (save)="onEditSave($event)"
+    (cancel)="onEditCancel()"
+  ></app-social-insurance-status-edit-modal>
+</div>
+
+<style>
+  .active-page {
+    background: #1976d2 !important;
+    color: #fff !important;
+    font-weight: bold;
+  }
+</style> 
