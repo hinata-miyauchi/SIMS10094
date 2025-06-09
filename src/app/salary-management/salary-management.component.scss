@@ -641,4 +641,42 @@ h2 {
   white-space: nowrap;
   z-index: 10;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.diff-row {
+  background: #fffbe6;
+}
+.diff-row:hover {
+  background: #ffe082;
+}
+
+.diff-cell {
+  background: #ffe082 !important;
+}
+
+.diff-value {
+  color: #d32f2f;
+  font-weight: bold;
+}
+
+.form-group:has(button) {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.search-btn {
+  padding: 8px 22px;
+  background: #4a90e2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.05em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0;
+}
+.search-btn:hover {
+  background: #357abd;
 } 

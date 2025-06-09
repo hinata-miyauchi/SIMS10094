@@ -2,24 +2,27 @@
   <div class="top-bar">
     <button class="home-btn" routerLink="/">ホームへ戻る</button>
   </div>
-  <h2>保険料率一覧</h2>
-  <form class="search-form" (ngSubmit)="$event.preventDefault()">
-    <div class="search-fields">
-      <div class="search-group">
-        <label>年度
-          <select [(ngModel)]="searchYear" name="searchYear">
-            <option value="">すべて</option>
-            <option *ngFor="let y of years" [value]="y">{{y}}</option>
-          </select>
-        </label>
-        <label>都道府県名
-          <select [(ngModel)]="searchPrefecture" name="searchPrefecture">
-            <option value="">すべて</option>
-            <option *ngFor="let p of prefectures" [value]="p">{{p}}</option>
-          </select>
-        </label>
+  <h2 class="main-title">保険料率一覧</h2>
+  <form class="search-form" (submit)="$event.preventDefault()">
+    <div class="form-fields" style="display: flex; gap: 24px; align-items: flex-end;">
+      <div class="form-group">
+        <label for="searchYear">年度</label>
+        <select id="searchYear" [(ngModel)]="pendingSearchYear" name="pendingSearchYear">
+          <option value="">すべて</option>
+          <option *ngFor="let y of years" [value]="y">{{y}}</option>
+        </select>
       </div>
-      <button type="button" class="clear-btn" (click)="clearSearch()">クリア</button>
+      <div class="form-group">
+        <label for="searchPrefecture">都道府県名</label>
+        <select id="searchPrefecture" [(ngModel)]="pendingSearchPrefecture" name="pendingSearchPrefecture">
+          <option value="">すべて</option>
+          <option *ngFor="let p of prefectures" [value]="p">{{p}}</option>
+        </select>
+      </div>
+      <div class="form-group" style="min-width: 180px; margin-left: auto; display: flex; gap: 8px;">
+        <button class="search-btn" type="button" (click)="onSearch()">検索</button>
+        <button class="search-btn" type="button" (click)="onClearSearch()">クリア</button>
+      </div>
     </div>
   </form>
   <table *ngIf="filteredRates.length > 0" class="insurance-table">

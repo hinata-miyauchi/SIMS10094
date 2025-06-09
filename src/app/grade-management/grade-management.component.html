@@ -3,18 +3,32 @@
     <button class="home-btn" (click)="goHome()">ホームへ戻る</button>
   </div>
   <h2 class="main-title">等級管理</h2>
-  <div class="search-bar">
-    <div class="search-group">
-      <label for="searchEmployeeNo">従業員番号で検索</label>
-      <input id="searchEmployeeNo" [(ngModel)]="searchEmployeeNo" name="searchEmployeeNo" type="text" placeholder="例: 1001" autocomplete="off" />
+  <form class="search-form" (submit)="$event.preventDefault()">
+    <div class="form-fields">
+      <div class="form-group">
+        <label for="searchEmployeeNo">従業員番号</label>
+        <input id="searchEmployeeNo" [(ngModel)]="searchEmployeeNo" name="searchEmployeeNo" type="text" placeholder="社員番号で検索" autocomplete="off" />
+      </div>
+      <div class="form-group">
+        <label for="searchYear">対象年</label>
+        <select id="searchYear" [(ngModel)]="searchYear" name="searchYear">
+          <option value="">--</option>
+          <option *ngFor="let y of yearList" [value]="y">{{y}}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="searchMonth">対象月</label>
+        <select id="searchMonth" [(ngModel)]="searchMonth" name="searchMonth">
+          <option value="">--</option>
+          <option *ngFor="let m of monthList" [value]="m">{{m}}</option>
+        </select>
+      </div>
+      <div class="form-group" style="align-self: flex-end; min-width: 120px; display: flex; gap: 8px;">
+        <button class="search-btn" type="button" (click)="onSearch()">検索</button>
+        <button class="search-btn" type="button" (click)="onClearSearch()">クリア</button>
+      </div>
     </div>
-    <div class="search-group">
-      <label for="searchSalaryMonth">対象年月</label>
-      <input id="searchSalaryMonth" [(ngModel)]="searchSalaryMonth" name="searchSalaryMonth" type="month" class="salary-month" />
-    </div>
-    <button class="search-btn" (click)="onSearch()">検索</button>
-    <button class="search-btn" style="background:#aaa;" type="button" (click)="onClearSearch()">クリア</button>
-  </div>
+  </form>
   <table class="grade-table">
     <thead>
       <tr>

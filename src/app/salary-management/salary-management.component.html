@@ -21,7 +21,10 @@
           </div>
           <div class="form-group">
             <label>給与年</label>
-            <input [(ngModel)]="searchSalaryYear" name="searchSalaryYear" type="text" placeholder="例: 2025" maxlength="4" (input)="onYearInput($event)" />
+            <select [(ngModel)]="searchSalaryYear" name="searchSalaryYear">
+              <option value="">--</option>
+              <option *ngFor="let y of yearList" [value]="y">{{y}}</option>
+            </select>
           </div>
           <div class="form-group">
             <label>給与月</label>
@@ -29,6 +32,10 @@
               <option value="">--</option>
               <option *ngFor="let m of ['01','02','03','04','05','06','07','08','09','10','11','12']" [value]="m">{{m}}</option>
             </select>
+          </div>
+          <div class="form-group" style="align-self: flex-end; min-width: 120px; display: flex; gap: 8px;">
+            <button class="search-btn" type="button" (click)="onSearch()">検索</button>
+            <button class="search-btn" type="button" (click)="onClearSearch()">クリア</button>
           </div>
         </div>
       </form>
@@ -42,21 +49,27 @@
               <th>勤務日数</th>
               <th>勤務時間</th>
               <th>給与</th>
+              <th>固定的賃金</th>
               <th>賞与</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of filteredSalaryList">
+            <tr *ngFor="let item of filteredSalaryList"
+                [ngClass]="{'diff-row': item.fixedSalary != item.expectedFixedSalary}"
+                [attr.title]="item.fixedSalary != item.expectedFixedSalary ? '固定的賃金と見込み固定給に差が生じているため、随時改定が必要な可能性もしくは見込み固定給変更の必要あり' : null">
               <td>{{item.employeeNo}}</td>
               <td>{{item.employeeName}}</td>
               <td>{{item.salaryMonth}}</td>
               <td>{{item.workDays}}</td>
               <td>{{item.workHours}}</td>
               <td>{{item.salary | number}}</td>
+              <td>
+                <span [ngClass]="{'diff-value': item.fixedSalary != item.expectedFixedSalary}">{{item.fixedSalary | number}}</span>
+              </td>
               <td>{{item.bonus != null && item.bonus !== '' ? (item.bonus | number) : 0}}</td>
             </tr>
             <tr *ngIf="filteredSalaryList.length === 0">
-              <td colspan="7" style="text-align:center; color:#888;">該当データがありません</td>
+              <td colspan="8" style="text-align:center; color:#888;">該当データがありません</td>
             </tr>
           </tbody>
         </table>

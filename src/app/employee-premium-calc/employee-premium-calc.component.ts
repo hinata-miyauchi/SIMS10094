@@ -20,6 +20,16 @@ interface Employee {
   employmentType?: string;
   joinDate?: string;
   leaveDate?: string;
+  healthInsurance?: boolean;
+  nursingCareInsurance?: boolean;
+  pension?: boolean;
+  manualInsuranceEdit?: boolean;
+  autoHealthInsurance?: boolean;
+  autoNursingCareInsurance?: boolean;
+  autoPension?: boolean;
+  manualHealthInsurance?: boolean;
+  manualNursingCareInsurance?: boolean;
+  manualPension?: boolean;
 }
 
 interface Grade {
@@ -73,6 +83,8 @@ export class EmployeePremiumCalcComponent implements OnInit {
   premiumMap: { [employee_no: string]: any } = {};
   noEmployeeFound: boolean = false;
   salaryNotFoundMessage: string = '';
+  pendingSalaryYear: string = '';
+  pendingSalaryMonthOnly: string = '';
 
   constructor(private firestore: Firestore, private router: Router, private auth: Auth) {}
 
@@ -87,6 +99,8 @@ export class EmployeePremiumCalcComponent implements OnInit {
     }
     this.selectedSalaryYear = now.getFullYear().toString();
     this.selectedSalaryMonthOnly = ('0' + (now.getMonth() + 1)).slice(-2);
+    this.pendingSalaryYear = this.selectedSalaryYear;
+    this.pendingSalaryMonthOnly = this.selectedSalaryMonthOnly;
     this.updateSalaryMonth();
     this.salaryMonthOptions = [];
     const endYear = now.getFullYear();
@@ -119,6 +133,8 @@ export class EmployeePremiumCalcComponent implements OnInit {
       const companyData = companyDoc.data();
       this.officesForm = companyData['officesForm'] || [];
     }
+    // 初期表示時に自動検索
+    await this.searchEmployeesByNo();
     this.loading = false;
   }
 
@@ -169,13 +185,42 @@ export class EmployeePremiumCalcComponent implements OnInit {
             myNumber: data.employee_no ?? '',
             employmentType: data.employmentType ?? '',
             joinDate: data.joinDate ?? '',
-            leaveDate: data.leaveDate ?? ''
+            leaveDate: data.leaveDate ?? '',
+            healthInsurance: data.healthInsurance ?? false,
+            nursingCareInsurance: data.nursingCareInsurance ?? false,
+            pension: data.pension ?? false,
+            manualInsuranceEdit: data.manualInsuranceEdit ?? false,
+            autoHealthInsurance: data.autoHealthInsurance ?? data.healthInsurance ?? false,
+            autoNursingCareInsurance: data.autoNursingCareInsurance ?? data.nursingCareInsurance ?? false,
+            autoPension: data.autoPension ?? data.pension ?? false,
+            manualHealthInsurance: data.manualHealthInsurance ?? data.healthInsurance ?? false,
+            manualNursingCareInsurance: data.manualNursingCareInsurance ?? data.nursingCareInsurance ?? false,
+            manualPension: data.manualPension ?? data.pension ?? false
           } as Employee;
         })
         .filter(e => employeeNos.includes(e.employee_no));
       // 保険料計算キャッシュ
       this.premiumMap = {};
       for (const e of this.employees) {
+        let bonus = 0;
+        if (e.employee_no && this.selectedSalaryMonth) {
+          try {
+            const salarySnap = await getDocs(
+              query(
+                collection(this.firestore, 'salaries'),
+                where('employee_no', '==', e.employee_no),
+                where('salary_date', '==', this.selectedSalaryMonth)
+              )
+            );
+            if (!salarySnap.empty) {
+              const salaryDoc = salarySnap.docs[0];
+              bonus = Number(salaryDoc.data()['bonus']) || 0;
+            }
+          } catch (err) {
+            bonus = 0;
+          }
+        }
+        e.bonus = bonus;
         this.premiumMap[e.employee_no] = await this.calcPremium(e);
       }
       this.employees = this.employees.sort((a, b) => a.employee_no.localeCompare(b.employee_no, 'ja'));
@@ -217,13 +262,42 @@ export class EmployeePremiumCalcComponent implements OnInit {
         myNumber: data.employee_no ?? '',
         employmentType: data.employmentType ?? '',
         joinDate: data.joinDate ?? '',
-        leaveDate: data.leaveDate ?? ''
+        leaveDate: data.leaveDate ?? '',
+        healthInsurance: data.healthInsurance ?? false,
+        nursingCareInsurance: data.nursingCareInsurance ?? false,
+        pension: data.pension ?? false,
+        manualInsuranceEdit: data.manualInsuranceEdit ?? false,
+        autoHealthInsurance: data.autoHealthInsurance ?? data.healthInsurance ?? false,
+        autoNursingCareInsurance: data.autoNursingCareInsurance ?? data.nursingCareInsurance ?? false,
+        autoPension: data.autoPension ?? data.pension ?? false,
+        manualHealthInsurance: data.manualHealthInsurance ?? data.healthInsurance ?? false,
+        manualNursingCareInsurance: data.manualNursingCareInsurance ?? data.nursingCareInsurance ?? false,
+        manualPension: data.manualPension ?? data.pension ?? false
       } as Employee;
     });
     // 保険料計算を事前に実行しキャッシュ
     this.premiumMap = {};
     let allNoSalary = true;
     for (const e of this.employees) {
+      let bonus = 0;
+      if (e.employee_no && this.selectedSalaryMonth) {
+        try {
+          const salarySnap = await getDocs(
+            query(
+              collection(this.firestore, 'salaries'),
+              where('employee_no', '==', e.employee_no),
+              where('salary_date', '==', this.selectedSalaryMonth)
+            )
+          );
+          if (!salarySnap.empty) {
+            const salaryDoc = salarySnap.docs[0];
+            bonus = Number(salaryDoc.data()['bonus']) || 0;
+          }
+        } catch (err) {
+          bonus = 0;
+        }
+      }
+      e.bonus = bonus;
       this.premiumMap[e.employee_no] = await this.calcPremium(e);
       // 給与情報の有無を判定
       const salaryDocId = `${e.employee_no}_${this.selectedSalaryMonth}`;
@@ -249,6 +323,24 @@ export class EmployeePremiumCalcComponent implements OnInit {
 
   // 従業員ごとの計算結果を返す
   async calcPremium(e: Employee) {
+    let isManual = false;
+    let message = '';
+    let careError = '';
+    // まず自動判定値で保険料を仮計算
+    const autoHealth = e.autoHealthInsurance;
+    const autoCare = e.autoNursingCareInsurance;
+    const autoPension = e.autoPension;
+    const manualHealth = e.manualHealthInsurance;
+    const manualCare = e.manualNursingCareInsurance;
+    const manualPension = e.manualPension;
+    let useHealth = autoHealth;
+    let useCare = autoCare;
+    let usePension = autoPension;
+    if ((e as any).manualInsuranceEdit) {
+      useHealth = manualHealth;
+      useCare = manualCare;
+      usePension = manualPension;
+    }
     if (!this.selectedSalaryMonth) {
       return {
         grade: '',
@@ -260,7 +352,9 @@ export class EmployeePremiumCalcComponent implements OnInit {
         pensionCompany: '',
         pensionPersonal: '',
         careError: '給与計算月未選択',
-        salary: ''
+        salary: '',
+        isManual,
+        message
       };
     }
     console.log('grades:', this.grades);
@@ -269,6 +363,8 @@ export class EmployeePremiumCalcComponent implements OnInit {
     console.log('employee:', e);
     // 給与取得（salariesコレクションから）
     let salary = 0;
+    let bonus = 0;
+    let bonusMonth = '';
     if (e.employee_no && this.selectedSalaryMonth) {
       try {
         const salarySnap = await getDocs(
@@ -280,16 +376,71 @@ export class EmployeePremiumCalcComponent implements OnInit {
         );
         if (!salarySnap.empty) {
           const salaryDoc = salarySnap.docs[0];
-          salary = Number(salaryDoc.data()['salary']) || 0;
+          salary = Number(salaryDoc.data()['expected_fixed_salary']) || 0;
+          bonus = Number(salaryDoc.data()['bonus']) || 0;
+          bonusMonth = salaryDoc.data()['salary_date'] || '';
         }
       } catch (err) {
         salary = 0; // エラー時も0
       }
     }
+    // 標準賞与額（千円未満切り捨て）
+    let stdBonus = Math.floor(bonus / 1000) * 1000;
+    // 健康保険・介護保険：年度累計573万円上限
+    let bonusYear = 0;
+    if (bonusMonth) {
+      const [y, m] = bonusMonth.split('-').map(Number);
+      // 4月～翌3月の年度判定
+      const startYear = m >= 4 ? y : y - 1;
+      // 年度内の賞与累計取得
+      const bonusSnaps = await getDocs(
+        query(
+          collection(this.firestore, 'salaries'),
+          where('employee_no', '==', e.employee_no)
+        )
+      );
+      let total = 0;
+      bonusSnaps.forEach(doc => {
+        const d = doc.data();
+        const date = d['salary_date'];
+        if (date) {
+          const [yy, mm] = date.split('-').map(Number);
+          const inYear = (yy > startYear || (yy === startYear && mm >= 4)) && (yy < startYear + 1 || (yy === startYear + 1 && mm <= 3));
+          if (inYear) {
+            total += Math.floor((Number(d['bonus']) || 0) / 1000) * 1000;
+          }
+        }
+      });
+      bonusYear = total;
+      // 健康保険・介護保険：年度累計573万円上限
+      if (bonusYear > 5730000) {
+        stdBonus = Math.max(0, stdBonus - (bonusYear - 5730000));
+        if (stdBonus < 0) stdBonus = 0;
+      }
+    }
+    // 厚生年金：月の上限150万円、年度上限なし
+    let stdBonusPension = Math.floor(bonus / 1000) * 1000;
+    if (stdBonusPension > 1500000) stdBonusPension = 1500000;
     // 等級判定
-    const grade = this.grades.find(g => salary >= g.lower_limit && salary < g.upper_limit);
-    // 標準報酬月額
+    let grade = this.grades.find(g => salary >= g.lower_limit && salary < g.upper_limit);
+    if (salary >= 1355000) {
+      grade = this.grades.find(g => g.grade === 50);
+    }
     const standard = grade ? grade.standard : 0;
+    // 健康保険・介護保険はstandardをそのまま使う
+    const healthStandard = standard;
+    const careStandard = standard;
+    // 厚生年金の標準報酬月額
+    let pensionStandard = standard;
+    if (grade) {
+      if (grade.grade <= 4) {
+        const grade4 = this.grades.find(g => g.grade === 4);
+        if (grade4) pensionStandard = grade4.standard;
+      } else if (grade.grade >= 35) {
+        const grade35 = this.grades.find(g => g.grade === 35);
+        if (grade35) pensionStandard = grade35.standard;
+      }
+    }
     // 給与計算月の値をDate型に変換
     let premiumMonth: Date | null = null;
     if (this.selectedSalaryMonth) {
@@ -353,13 +504,16 @@ export class EmployeePremiumCalcComponent implements OnInit {
         age--;
       }
     }
-    // 健康保険
-    const healthCompany = rate ? Math.round((safeNumber(standard) * safeNumber(rate.health_insurance_rate_employer) / 100) * 10) / 10 : 0;
-    const healthPersonal = rate ? Math.round((safeNumber(standard) * safeNumber(rate.health_insurance_rate_employee) / 100) * 10) / 10 : 0;
-    // 会社情報の支払いタイミングを仮で'当月'とする（本来はFirestoreから取得）
-    const paymentTiming: string = '当月'; // TODO: Firestoreから取得
-    // 介護保険料の発生判定
-    let careError = '';
+    // 賞与保険料計算
+    const healthBonusCompany = (useHealth && rate) ? Math.floor(stdBonus * safeNumber(rate.health_insurance_rate_employer) / 100) : 0;
+    const healthBonusPersonal = (useHealth && rate) ? Math.floor(stdBonus * safeNumber(rate.health_insurance_rate_employee) / 100) : 0;
+    const careBonusCompany = (useCare && rate) ? Math.floor(stdBonus * safeNumber(rate.care_insurance_rate_employer) / 100) : 0;
+    const careBonusPersonal = (useCare && rate) ? Math.floor(stdBonus * safeNumber(rate.care_insurance_rate_employee) / 100) : 0;
+    const pensionBonusCompany = (usePension && rate) ? Math.floor(stdBonusPension * safeNumber(rate.pension_insurance_rate_employer) / 100) : 0;
+    const pensionBonusPersonal = (usePension && rate) ? Math.floor(stdBonusPension * safeNumber(rate.pension_insurance_rate_employee) / 100) : 0;
+    // 月額保険料＋賞与保険料
+    const healthCompany = (useHealth && rate) ? Math.round((safeNumber(healthStandard) * safeNumber(rate.health_insurance_rate_employer) / 100) * 10) / 10 + healthBonusCompany : 0;
+    const healthPersonal = (useHealth && rate) ? Math.round((safeNumber(healthStandard) * safeNumber(rate.health_insurance_rate_employee) / 100) * 10) / 10 + healthBonusPersonal : 0;
     let careCompany = 0;
     let carePersonal = 0;
     if (!e.birth) {
@@ -377,18 +531,61 @@ export class EmployeePremiumCalcComponent implements OnInit {
       // 65歳到達月の前月
       const age65Date = new Date(birthDate.getFullYear() + 65, birthDate.getMonth(), birthDate.getDate() - 1);
       const age65Month = new Date(age65Date.getFullYear(), age65Date.getMonth(), 1);
-      // premiumMonthがcareStartMonth以上かつage65Month未満なら介護保険料を計算
-      if (premiumMonth >= careStartMonth && premiumMonth < age65Month) {
-        careCompany = rate ? Math.round((safeNumber(standard) * safeNumber(rate.care_insurance_rate_employer) / 100) * 10) / 10 : 0;
-        carePersonal = rate ? Math.round((safeNumber(standard) * safeNumber(rate.care_insurance_rate_employee) / 100) * 10) / 10 : 0;
+      if (premiumMonth >= careStartMonth && premiumMonth < age65Month && useCare) {
+        careCompany = rate ? Math.round((safeNumber(careStandard) * safeNumber(rate.care_insurance_rate_employer) / 100) * 10) / 10 + careBonusCompany : 0;
+        carePersonal = rate ? Math.round((safeNumber(careStandard) * safeNumber(rate.care_insurance_rate_employee) / 100) * 10) / 10 + careBonusPersonal : 0;
       } else {
         careCompany = 0;
         carePersonal = 0;
       }
     }
-    // 厚生年金
-    const pensionCompany = rate ? Math.round((safeNumber(standard) * safeNumber(rate.pension_insurance_rate_employer) / 100) * 100) / 100 : 0;
-    const pensionPersonal = rate ? Math.round((safeNumber(standard) * safeNumber(rate.pension_insurance_rate_employee) / 100) * 100) / 100 : 0;
+    const pensionCompany = (usePension && rate) ? Math.round((safeNumber(pensionStandard) * safeNumber(rate.pension_insurance_rate_employer) / 100) * 100) / 100 + pensionBonusCompany : 0;
+    const pensionPersonal = (usePension && rate) ? Math.round((safeNumber(pensionStandard) * safeNumber(rate.pension_insurance_rate_employee) / 100) * 100) / 100 + pensionBonusPersonal : 0;
+
+    // 差分フラグ
+    let healthCompanyDiff = false, healthPersonalDiff = false, careCompanyDiff = false, carePersonalDiff = false, pensionCompanyDiff = false, pensionPersonalDiff = false;
+    if ((e as any).manualInsuranceEdit) {
+      console.log(
+        'employee_no:', e.employee_no,
+        'autoHealth:', autoHealth,
+        'autoCare:', autoCare,
+        'autoPension:', autoPension,
+        'manualHealth:', manualHealth,
+        'manualCare:', manualCare,
+        'manualPension:', manualPension
+      );
+      // 自動判定値での保険料も計算
+      const autoHealthCompany = (autoHealth && rate) ? Math.round((safeNumber(standard) * safeNumber(rate.health_insurance_rate_employer) / 100) * 10) / 10 : 0;
+      const autoHealthPersonal = (autoHealth && rate) ? Math.round((safeNumber(standard) * safeNumber(rate.health_insurance_rate_employee) / 100) * 10) / 10 : 0;
+      let autoCareCompany = 0, autoCarePersonal = 0;
+      if (!e.birth) {
+        // do nothing
+      } else if (!premiumMonth) {
+        // do nothing
+      } else {
+        const birthDate = new Date(e.birth);
+        const age40Date = new Date(birthDate.getFullYear() + 40, birthDate.getMonth(), birthDate.getDate() - 1);
+        const age40Month = new Date(age40Date.getFullYear(), age40Date.getMonth(), 1);
+        const careStartMonth = new Date(age40Month.getFullYear(), age40Month.getMonth() - 1, 1);
+        const age65Date = new Date(birthDate.getFullYear() + 65, birthDate.getMonth(), birthDate.getDate() - 1);
+        const age65Month = new Date(age65Date.getFullYear(), age65Date.getMonth(), 1);
+        if (premiumMonth >= careStartMonth && premiumMonth < age65Month && autoCare) {
+          autoCareCompany = rate ? Math.round((safeNumber(standard) * safeNumber(rate.care_insurance_rate_employer) / 100) * 10) / 10 : 0;
+          autoCarePersonal = rate ? Math.round((safeNumber(standard) * safeNumber(rate.care_insurance_rate_employee) / 100) * 10) / 10 : 0;
+        } else {
+          autoCareCompany = 0;
+          autoCarePersonal = 0;
+        }
+      }
+      const autoPensionCompany = (autoPension && rate) ? Math.round((safeNumber(standard) * safeNumber(rate.pension_insurance_rate_employer) / 100) * 100) / 100 : 0;
+      const autoPensionPersonal = (autoPension && rate) ? Math.round((safeNumber(standard) * safeNumber(rate.pension_insurance_rate_employee) / 100) * 100) / 100 : 0;
+      healthCompanyDiff = healthCompany !== autoHealthCompany;
+      healthPersonalDiff = healthPersonal !== autoHealthPersonal;
+      careCompanyDiff = careCompany !== autoCareCompany;
+      carePersonalDiff = carePersonal !== autoCarePersonal;
+      pensionCompanyDiff = pensionCompany !== autoPensionCompany;
+      pensionPersonalDiff = pensionPersonal !== autoPensionPersonal;
+    }
     const premium = {
       grade: safeNumber(grade && grade.grade),
       standard: safeNumber(standard),
@@ -399,13 +596,37 @@ export class EmployeePremiumCalcComponent implements OnInit {
       pensionCompany: safeNumber(pensionCompany),
       pensionPersonal: safeNumber(pensionPersonal),
       careError,
-      salary: safeNumber(salary)
+      salary: safeNumber(salary),
+      healthCompanyDiff,
+      healthPersonalDiff,
+      careCompanyDiff,
+      carePersonalDiff,
+      pensionCompanyDiff,
+      pensionPersonalDiff
     };
-    console.log('premium:', premium);
+    console.log('premium:', e.employee_no, premium);
     return premium;
   }
 
   goHome() {
     this.router.navigate(['/home']);
+  }
+
+  onSearch() {
+    this.selectedSalaryYear = this.pendingSalaryYear;
+    this.selectedSalaryMonthOnly = this.pendingSalaryMonthOnly;
+    this.updateSalaryMonth();
+    this.searchEmployeesByNo();
+  }
+
+  onClearSearch() {
+    const now = new Date();
+    this.searchEmployeeNo = '';
+    this.pendingSalaryYear = now.getFullYear().toString();
+    this.pendingSalaryMonthOnly = ('0' + (now.getMonth() + 1)).slice(-2);
+    this.selectedSalaryYear = this.pendingSalaryYear;
+    this.selectedSalaryMonthOnly = this.pendingSalaryMonthOnly;
+    this.updateSalaryMonth();
+    this.onSearch();
   }
 } 

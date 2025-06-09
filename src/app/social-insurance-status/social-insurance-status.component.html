@@ -3,11 +3,19 @@
     <button class="home-btn" (click)="goHome()">ホームへ戻る</button>
   </div>
   <h2 class="main-title">社会保険加入状況一覧</h2>
-  <div class="search-bar" style="margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
-    <input type="text" [(ngModel)]="searchEmployeeNo" placeholder="従業員番号で検索" style="padding: 0.4em 1em; border-radius: 4px; border: 1px solid #bbb; font-size: 1em; width: 180px;" (keyup.enter)="onSearchEmployeeNo()" (input)="onSearchEmployeeNo()">
-    <button (click)="onSearchEmployeeNo()" style="padding: 0.4em 1.2em; border-radius: 4px; border: none; background: #1976d2; color: #fff; font-size: 1em; cursor: pointer;">検索</button>
-    <button (click)="onClearSearch()" style="padding: 0.4em 1.2em; border-radius: 4px; border: none; background: #e0e0e0; color: #222; font-size: 1em; cursor: pointer;">クリア</button>
-  </div>
+  <form class="search-form" (submit)="$event.preventDefault()">
+    <div class="form-fields">
+      <div class="form-group">
+        <label for="searchEmployeeNo">従業員番号</label>
+        <input id="searchEmployeeNo" [(ngModel)]="pendingSearchEmployeeNo" name="pendingSearchEmployeeNo" type="text" placeholder="従業員番号で検索" autocomplete="off" />
+      </div>
+      <div class="form-group" style="align-self: flex-end; min-width: 120px; display: flex; gap: 8px;">
+        <button class="search-btn" type="button" (click)="onSearchEmployeeNo()">検索</button>
+        <button class="search-btn" type="button" (click)="onClearSearch()">クリア</button>
+      </div>
+    </div>
+  </form>
+  <div style="margin-bottom: 1.5rem;"></div>
   <table class="social-insurance-table">
     <thead>
       <tr>

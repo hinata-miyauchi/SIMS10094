@@ -33,10 +33,21 @@ export class GradeManagementComponent {
   salaryRows: SalaryRow[] = [];
   loading = false;
   searchEmployeeNo: string = '';
-  searchSalaryMonth: string = '';
+  searchYear: string = '';
+  searchMonth: string = '';
+  yearList: number[] = [];
+  monthList: number[] = [1,2,3,4,5,6,7,8,9,10,11,12];
   allSalaryRows: SalaryRow[] = [];
 
   constructor(private firestore: Firestore, private router: Router) {
+    const now = new Date();
+    const thisYear = now.getFullYear();
+    this.yearList = [];
+    for(let y = 2021; y <= thisYear; y++) {
+      this.yearList.push(y);
+    }
+    this.searchYear = thisYear.toString();
+    this.searchMonth = (now.getMonth() + 1).toString();
     this.fetchData();
   }
 
@@ -65,6 +76,7 @@ export class GradeManagementComponent {
     });
     this.salaryRows = [];
     this.loading = false;
+    this.onSearch();
   }
 
   goHome() {
@@ -75,8 +87,11 @@ export class GradeManagementComponent {
     this.salaryRows = this.allSalaryRows
       .filter(row => {
         const matchNo = !this.searchEmployeeNo || row.employeeNo.includes(this.searchEmployeeNo);
-        // 年月は部分一致（YYYY-MM）
-        const matchMonth = !this.searchSalaryMonth || (row as any).salaryMonth?.startsWith(this.searchSalaryMonth);
+        let matchMonth = true;
+        if (this.searchYear && this.searchMonth) {
+          const ym = `${this.searchYear}-${this.searchMonth.padStart(2, '0')}`;
+          matchMonth = row.salaryMonth?.startsWith(ym);
+        }
         return matchNo && matchMonth;
       })
       .sort((a, b) => (b.salaryMonth || '').localeCompare(a.salaryMonth || ''));
@@ -84,7 +99,8 @@ export class GradeManagementComponent {
 
   onClearSearch() {
     this.searchEmployeeNo = '';
-    this.searchSalaryMonth = '';
-    this.salaryRows = [];
+    this.searchYear = '';
+    this.searchMonth = '';
+    this.onSearch();
   }
 } 

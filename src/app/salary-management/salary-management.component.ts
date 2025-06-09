@@ -33,6 +33,7 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
   employeeError: string = '';
   selectedCsvFile: File | null = null;
   importMessage: string = '';
+  yearList: number[] = [];
 
   get filteredEmployees() {
     if (!this.searchEmployeeNo) return this.employees;
@@ -64,6 +65,14 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    // 現在の年月を取得し、デフォルトの検索条件にセット
+    const now = new Date();
+    this.yearList = [];
+    for(let y = 2021; y <= now.getFullYear(); y++) {
+      this.yearList.push(y);
+    }
+    this.searchSalaryYear = String(now.getFullYear());
+    this.searchSalaryMonth = ('0' + (now.getMonth() + 1)).slice(-2);
     // Firestoreから従業員リストを取得
     const snap = await getDocs(collection(this.firestore, 'employees'));
     this.employees = snap.docs.map(doc => {
@@ -113,7 +122,9 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
         workHours: data['work_hours'] ?? '',
         salary: data['salary'] ?? '',
         hasBonus: data['has_bonus'] ?? '',
-        bonus: data['bonus'] ?? ''
+        bonus: data['bonus'] ?? '',
+        fixedSalary: data['fixed_salary'] ?? '',
+        expectedFixedSalary: data['expected_fixed_salary'] ?? ''
       };
     });
   }
@@ -278,8 +289,22 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
         workHours: data['work_hours'] ?? '',
         salary: data['salary'] ?? '',
         hasBonus: data['has_bonus'] ?? '',
-        bonus: data['bonus'] ?? ''
+        bonus: data['bonus'] ?? '',
+        fixedSalary: data['fixed_salary'] ?? '',
+        expectedFixedSalary: data['expected_fixed_salary'] ?? ''
       };
     });
+  }
+
+  onSearch() {
+    // 検索条件でフィルタリングをトリガー（getterなので再描画のみ）
+    // 何もしなくてもgetterで自動反映されるが、明示的に呼ぶ場合用
+  }
+
+  onClearSearch() {
+    this.searchEmployeeNo = '';
+    this.searchSalaryYear = '';
+    this.searchSalaryMonth = '';
+    this.onSearch();
   }
 } 

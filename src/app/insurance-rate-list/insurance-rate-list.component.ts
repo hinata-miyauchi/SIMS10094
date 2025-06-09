@@ -18,6 +18,8 @@ export class InsuranceRateListComponent implements OnInit {
   prefectures: string[] = [];
   searchYear: string = '';
   searchPrefecture: string = '';
+  pendingSearchYear: string = '';
+  pendingSearchPrefecture: string = '';
 
   constructor(private firestore: Firestore) {}
 
@@ -28,6 +30,15 @@ export class InsuranceRateListComponent implements OnInit {
     this.filteredRates = [...this.insuranceRates];
     // 年度の選択肢を降順で生成
     this.years = Array.from(new Set(this.insuranceRates.map(r => Number(r.insurance_year)))).sort((a, b) => b - a);
+    // デフォルトで現在の年度をセット
+    const currentYear = new Date().getFullYear();
+    if (this.years.includes(currentYear)) {
+      this.searchYear = String(currentYear);
+      this.pendingSearchYear = String(currentYear);
+    } else if (this.years.length > 0) {
+      this.searchYear = String(this.years[0]);
+      this.pendingSearchYear = String(this.years[0]);
+    }
     // 都道府県名の選択肢を日本の正式な並び順で生成
     const jpPrefList = [
       '北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県',
@@ -40,6 +51,7 @@ export class InsuranceRateListComponent implements OnInit {
       '福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'
     ];
     this.prefectures = jpPrefList.filter(p => this.insuranceRates.some(r => r.prefecture_name === p));
+    this.filterRates();
   }
 
   filterRates() {
@@ -55,13 +67,17 @@ export class InsuranceRateListComponent implements OnInit {
     });
   }
 
-  clearSearch() {
-    this.searchYear = '';
-    this.searchPrefecture = '';
+  onSearch() {
+    this.searchYear = this.pendingSearchYear;
+    this.searchPrefecture = this.pendingSearchPrefecture;
     this.filterRates();
   }
 
-  ngDoCheck() {
+  onClearSearch() {
+    this.pendingSearchYear = '';
+    this.pendingSearchPrefecture = '';
+    this.searchYear = '';
+    this.searchPrefecture = '';
     this.filterRates();
   }
 } 

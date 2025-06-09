@@ -86,15 +86,15 @@ export class SocialInsuranceStatusEditModalComponent {
   @Input() healthInsurance!: boolean;
   @Input() nursingCareInsurance!: boolean;
   @Input() pension!: boolean;
-  @Output() save = new EventEmitter<{healthInsurance: boolean, nursingCareInsurance: boolean, pension: boolean, manualInsuranceEdit: boolean}>();
+  @Output() save = new EventEmitter<{manualHealthInsurance: boolean, manualNursingCareInsurance: boolean, manualPension: boolean, manualInsuranceEdit: boolean}>();
   @Output() cancel = new EventEmitter<void>();
   @Output() auto = new EventEmitter<void>();
 
   onSave() {
     this.save.emit({
-      healthInsurance: this.healthInsurance,
-      nursingCareInsurance: this.nursingCareInsurance,
-      pension: this.pension,
+      manualHealthInsurance: this.healthInsurance,
+      manualNursingCareInsurance: this.nursingCareInsurance,
+      manualPension: this.pension,
       manualInsuranceEdit: true
     });
   }
@@ -103,9 +103,9 @@ export class SocialInsuranceStatusEditModalComponent {
   }
   onAuto() {
     this.save.emit({
-      healthInsurance: this.healthInsurance,
-      nursingCareInsurance: this.nursingCareInsurance,
-      pension: this.pension,
+      manualHealthInsurance: this.healthInsurance,
+      manualNursingCareInsurance: this.nursingCareInsurance,
+      manualPension: this.pension,
       manualInsuranceEdit: false
     });
   }

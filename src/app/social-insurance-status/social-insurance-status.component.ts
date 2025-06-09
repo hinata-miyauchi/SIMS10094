@@ -32,6 +32,7 @@ interface Employee {
   nursingCareInsurance: boolean;
   pension: boolean;
   manualInsuranceEdit: boolean;
+  overseas_employment_type?: string;
 }
 
 @Component({
@@ -49,6 +50,7 @@ export class SocialInsuranceStatusComponent implements OnInit {
   pageSize: number = 25;
   totalPages: number = 1;
   searchEmployeeNo: string = '';
+  pendingSearchEmployeeNo: string = '';
   loading = false;
   errorMessage: string = '';
   editModalOpen = false;
@@ -84,6 +86,12 @@ export class SocialInsuranceStatusComponent implements OnInit {
         nursingCareInsurance = emp.nursingCareInsurance;
         pension = emp.pension;
       } else {
+        // 海外現地法人雇用は保険対象外
+        if (emp.overseas_employment_type === '現地法人雇用') {
+          healthInsurance = false;
+          nursingCareInsurance = false;
+          pension = false;
+        } else
         // 学生（昼間部学生）は保険対象外
         if (emp.employment_type_detail === '昼間部学生') {
           healthInsurance = false;
@@ -197,16 +205,35 @@ export class SocialInsuranceStatusComponent implements OnInit {
         remarks: ''
       });
       // 判定結果をFirestoreに保存
-      await setDoc(doc(this.firestore, 'employees', emp.employee_no), {
-        healthInsurance: healthInsurance ?? false,
-        nursingCareInsurance: nursingCareInsurance ?? false,
-        pension: pension ?? false
-      }, { merge: true });
+      if (emp.manualInsuranceEdit) {
+        await setDoc(doc(this.firestore, 'employees', emp.employee_no), {
+          manualHealthInsurance: healthInsurance ?? false,
+          manualNursingCareInsurance: nursingCareInsurance ?? false,
+          manualPension: pension ?? false,
+          manualInsuranceEdit: true,
+          // 旧フィールドも後方互換で更新
+          healthInsurance: healthInsurance ?? false,
+          nursingCareInsurance: nursingCareInsurance ?? false,
+          pension: pension ?? false
+        }, { merge: true });
+      } else {
+        await setDoc(doc(this.firestore, 'employees', emp.employee_no), {
+          autoHealthInsurance: healthInsurance ?? false,
+          autoNursingCareInsurance: nursingCareInsurance ?? false,
+          autoPension: pension ?? false,
+          manualInsuranceEdit: false,
+          // 旧フィールドも後方互換で更新
+          healthInsurance: healthInsurance ?? false,
+          nursingCareInsurance: nursingCareInsurance ?? false,
+          pension: pension ?? false
+        }, { merge: true });
+      }
     }
     this.filteredStatuses = [...this.statuses];
     this.currentPage = 1;
     this.updatePagedStatuses();
     this.loading = false;
+    this.pendingSearchEmployeeNo = this.searchEmployeeNo;
   }
 
   goHome() {
@@ -218,25 +245,40 @@ export class SocialInsuranceStatusComponent implements OnInit {
     this.editModalOpen = true;
   }
 
-  async onEditSave(data: {healthInsurance: boolean, nursingCareInsurance: boolean, pension: boolean, manualInsuranceEdit: boolean}) {
+  async onEditSave(data: {manualHealthInsurance: boolean, manualNursingCareInsurance: boolean, manualPension: boolean, manualInsuranceEdit: boolean}) {
     if (!this.editTarget) return;
-    // Firestoreのemployeesコレクションに反映
     const uid = this.auth.currentUser?.uid;
     if (!uid) return;
-    // employee_noで該当従業員を特定
     const employeesSnap = await getDocs(query(collection(this.firestore, 'employees'), where('uid', '==', uid), where('employee_no', '==', this.editTarget.employeeNo)));
     if (!employeesSnap.empty) {
       const docRef = employeesSnap.docs[0].ref;
-      await setDoc(docRef, {
-        healthInsurance: data.healthInsurance,
-        nursingCareInsurance: data.nursingCareInsurance,
-        pension: data.pension,
-        manualInsuranceEdit: data.manualInsuranceEdit
-      }, { merge: true });
+      if (data.manualInsuranceEdit) {
+        await setDoc(docRef, {
+          manualHealthInsurance: data.manualHealthInsurance,
+          manualNursingCareInsurance: data.manualNursingCareInsurance,
+          manualPension: data.manualPension,
+          manualInsuranceEdit: true,
+          // 旧フィールドも後方互換で更新
+          healthInsurance: data.manualHealthInsurance,
+          nursingCareInsurance: data.manualNursingCareInsurance,
+          pension: data.manualPension
+        }, { merge: true });
+      } else {
+        await setDoc(docRef, {
+          autoHealthInsurance: data.manualHealthInsurance,
+          autoNursingCareInsurance: data.manualNursingCareInsurance,
+          autoPension: data.manualPension,
+          manualInsuranceEdit: false,
+          // 旧フィールドも後方互換で更新
+          healthInsurance: data.manualHealthInsurance,
+          nursingCareInsurance: data.manualNursingCareInsurance,
+          pension: data.manualPension
+        }, { merge: true });
+      }
     }
     this.editModalOpen = false;
     this.editTarget = null;
-    await this.ngOnInit(); // 一覧再取得
+    await this.ngOnInit();
   }
 
   onEditCancel() {
@@ -245,14 +287,13 @@ export class SocialInsuranceStatusComponent implements OnInit {
   }
 
   onSearchEmployeeNo() {
+    this.searchEmployeeNo = this.pendingSearchEmployeeNo;
     const keyword = (this.searchEmployeeNo || '').trim();
     if (!keyword) {
       this.filteredStatuses = [...this.statuses];
-      this.currentPage = 1;
-      this.updatePagedStatuses();
-      return;
+    } else {
+      this.filteredStatuses = this.statuses.filter(s => s.employeeNo.includes(keyword));
     }
-    this.filteredStatuses = this.statuses.filter(s => s.employeeNo.includes(keyword));
     this.currentPage = 1;
     this.updatePagedStatuses();
   }

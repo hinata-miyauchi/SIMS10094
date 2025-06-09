@@ -2,26 +2,33 @@
   <div class="top-bar">
     <button class="home-btn" (click)="goHome()">ホームへ戻る</button>
   </div>
-  <h1 class="main-title">従業員ごとの保険料自動算出</h1>
-  <div class="search-bar">
-    <div class="search-group">
-      <label for="searchEmployeeNo">従業員番号で検索</label>
-      <input id="searchEmployeeNo" [(ngModel)]="searchEmployeeNo" type="text" placeholder="例: 1001" autocomplete="off" />
+  <h2 class="main-title">従業員ごとの保険料自動算出</h2>
+  <form class="search-form" (submit)="$event.preventDefault()">
+    <div class="form-fields">
+      <div class="form-group">
+        <label for="searchEmployeeNo">従業員番号</label>
+        <input id="searchEmployeeNo" [(ngModel)]="searchEmployeeNo" name="searchEmployeeNo" type="text" placeholder="社員番号で検索" autocomplete="off" />
+      </div>
+      <div class="form-group">
+        <label>給与計算年</label>
+        <select [(ngModel)]="pendingSalaryYear" name="pendingSalaryYear" (change)="updateSalaryMonth()">
+          <option value="">--</option>
+          <option *ngFor="let y of salaryYearOptions" [value]="y">{{y}}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>給与計算月</label>
+        <select [(ngModel)]="pendingSalaryMonthOnly" name="pendingSalaryMonthOnly" (change)="updateSalaryMonth()">
+          <option value="">--</option>
+          <option *ngFor="let m of salaryMonthOnlyOptions" [value]="m">{{m}}</option>
+        </select>
+      </div>
+      <div class="form-group" style="align-self: flex-end; min-width: 120px; display: flex; gap: 8px;">
+        <button class="search-btn" type="button" (click)="onSearch()">検索</button>
+        <button class="search-btn" type="button" (click)="onClearSearch()">クリア</button>
+      </div>
     </div>
-    <div class="search-group">
-      <label>給与計算年</label>
-      <select [(ngModel)]="selectedSalaryYear" (change)="updateSalaryMonth()">
-        <option *ngFor="let y of salaryYearOptions" [value]="y">{{y}}年</option>
-      </select>
-    </div>
-    <div class="search-group">
-      <label>月</label>
-      <select [(ngModel)]="selectedSalaryMonthOnly" (change)="updateSalaryMonth()">
-        <option *ngFor="let m of salaryMonthOnlyOptions" [value]="m">{{m}}月</option>
-      </select>
-    </div>
-    <button class="search-btn" (click)="searchEmployeesByNo()">検索</button>
-  </div>
+  </form>
   <div *ngIf="loading">読み込み中...</div>
   <div *ngIf="noEmployeeFound" style="color: #e74c3c; margin-bottom: 8px;">
     対象の従業員はいません
@@ -44,23 +51,47 @@
       </tr>
     </thead>
     <tbody *ngIf="!salaryNotFoundMessage">
-      <tr *ngFor="let e of employees">
+      <tr *ngFor="let e of employees"
+          [ngClass]="{'manual-row': e.manualInsuranceEdit}"
+          [attr.title]="e.manualInsuranceEdit ? '社会保険加入状況を手動変更した算出結果です。' : null">
         <td>{{e.employee_no}}</td>
         <td>{{e.full_name}}</td>
         <td>{{premiumMap[e.employee_no]?.salary | number}}</td>
         <td>{{e.bonus | number}}</td>
         <td>{{premiumMap[e.employee_no]?.grade}}</td>
         <td>{{premiumMap[e.employee_no]?.standard | number}}</td>
-        <td>{{premiumMap[e.employee_no]?.healthCompany | number:'1.1-1'}} / {{premiumMap[e.employee_no]?.healthPersonal | number:'1.1-1'}} </td>
+        <td>
+          <span [ngClass]="{'manual-value': e.manualInsuranceEdit}">
+            {{premiumMap[e.employee_no]?.healthCompany | number:'1.2-2'}}
+          </span>
+          /
+          <span [ngClass]="{'manual-value': e.manualInsuranceEdit}">
+            {{premiumMap[e.employee_no]?.healthPersonal | number:'1.2-2'}}
+          </span>
+        </td>
         <td>
           <ng-container *ngIf="!premiumMap[e.employee_no]?.careError; else careErrorTpl">
-            {{premiumMap[e.employee_no]?.careCompany | number:'1.1-1'}} / {{premiumMap[e.employee_no]?.carePersonal | number:'1.1-1'}}
+            <span [ngClass]="{'manual-value': e.manualInsuranceEdit}">
+              {{premiumMap[e.employee_no]?.careCompany | number:'1.1-1'}}
+            </span>
+            /
+            <span [ngClass]="{'manual-value': e.manualInsuranceEdit}">
+              {{premiumMap[e.employee_no]?.carePersonal | number:'1.1-1'}}
+            </span>
           </ng-container>
           <ng-template #careErrorTpl>
             <span class="error-msg">{{premiumMap[e.employee_no]?.careError}}</span>
           </ng-template>
         </td>
-        <td>{{premiumMap[e.employee_no]?.pensionCompany | number:'1.2-2'}} / {{premiumMap[e.employee_no]?.pensionPersonal | number:'1.2-2'}}</td>
+        <td>
+          <span [ngClass]="{'manual-value': e.manualInsuranceEdit}">
+            {{premiumMap[e.employee_no]?.pensionCompany | number:'1.2-2'}}
+          </span>
+          /
+          <span [ngClass]="{'manual-value': e.manualInsuranceEdit}">
+            {{premiumMap[e.employee_no]?.pensionPersonal | number:'1.2-2'}}
+          </span>
+        </td>
       </tr>
     </tbody>
   </table>
