@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormArray } fr
 import { RouterLink } from '@angular/router';
 import { Firestore, doc, getDoc, setDoc, query, where, collection, getDocs } from '@angular/fire/firestore';
 import { Auth } from '@angular/fire/auth';
+import { calculateSocialInsuranceStatus } from '../social-insurance-status/social-insurance-status.component';
 
 @Component({
   selector: 'app-company-info',
@@ -41,7 +42,7 @@ export class CompanyInfoComponent implements OnInit {
         established: [''],
         business: [''],
         capital: [''],
-        employeeCount: ['', Validators.required],
+        isSpecifiedOffice: ['', Validators.required],
         weeklyWorkingHours: ['', Validators.required],
         monthlyWorkingDays: ['', Validators.required]
       }),
@@ -51,14 +52,14 @@ export class CompanyInfoComponent implements OnInit {
       ]),
       // 保険情報
       insurance: this.fb.group({
-        healthType: ['', Validators.required],
-        pensionStatus: ['', Validators.required]
+        healthType: ['', Validators.required]
       }),
       // 給与情報
       salary: this.fb.group({
         closingDay: [''],
         paymentDay: [''],
-        paymentTiming: ['', Validators.required]
+        paymentTiming: [''],
+        bonusTimes: ['', Validators.required]
       }),
       // 担当者情報
       staff: this.fb.group({
@@ -150,6 +151,10 @@ export class CompanyInfoComponent implements OnInit {
     this.clearMessageListener = clear;
   }
 
+  private toHalfWidth(str: string): string {
+    return (str || '').replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0));
+  }
+
   async save() {
     this.submitted = true;
     if (this.companyForm.invalid) {
@@ -164,9 +169,35 @@ export class CompanyInfoComponent implements OnInit {
       this.loading = false;
       return;
     }
-    const ref = doc(this.firestore, 'company', 'main');
-    const data = { ...this.companyForm.value, uid };
+    // 全角数字→半角数字変換
+    const formValue = { ...this.companyForm.value };
+    formValue.basic = { ...formValue.basic, companyNo: this.toHalfWidth(formValue.basic.companyNo) };
+    formValue.staff = { ...formValue.staff, staffContact: this.toHalfWidth(formValue.staff.staffContact) };
+    formValue.officesForm = formValue.officesForm.map((office: any) => ({
+      ...office,
+      applicableOfficeNo: this.toHalfWidth(office.applicableOfficeNo)
+    }));
+    const ref = doc(this.firestore, 'company', uid);
+    const data = { ...formValue, uid };
     await setDoc(ref, data, { merge: true });
+    // 会社情報保存後、全従業員の社会保険自動判定を一括更新
+    const employeesSnap = await getDocs(query(collection(this.firestore, 'employees'), where('uid', '==', uid)));
+    for (const docSnap of employeesSnap.docs) {
+      const emp = docSnap.data();
+      if (!emp['manualInsuranceEdit']) {
+        const result = calculateSocialInsuranceStatus(emp, data);
+        const updateObj: any = {
+          autoHealthInsurance: result.healthInsurance,
+          autoNursingCareInsurance: result.nursingCareInsurance,
+          autoPension: result.pension,
+          healthInsurance: result.healthInsurance,
+          nursingCareInsurance: result.nursingCareInsurance,
+          pension: result.pension,
+          remarks: result.remarks
+        };
+        await setDoc(doc(this.firestore, 'employees', docSnap.id), updateObj, { merge: true });
+      }
+    }
     this.message = '保存しました。';
     this.setupAutoClearMessage();
     this.loading = false;
@@ -178,7 +209,7 @@ export class CompanyInfoComponent implements OnInit {
     // 基本情報
     if (this.basicForm.get('name')?.invalid) fields.push('会社名');
     if (this.basicForm.get('companyNo')?.invalid) fields.push('法人番号');
-    if (this.basicForm.get('employeeCount')?.invalid) fields.push('従業員数');
+    if (this.basicForm.get('isSpecifiedOffice')?.invalid) fields.push('特定適用事業所であるか');
     if (this.basicForm.get('weeklyWorkingHours')?.invalid) fields.push('週の所定労働時間');
     if (this.basicForm.get('monthlyWorkingDays')?.invalid) fields.push('月の所定労働日数');
     // 事業所情報（最初の事業所のみチェック）
@@ -190,9 +221,9 @@ export class CompanyInfoComponent implements OnInit {
     }
     // 保険情報
     if (this.insuranceForm.get('healthType')?.invalid) fields.push('健康保険種別');
-    if (this.insuranceForm.get('pensionStatus')?.invalid) fields.push('厚生年金加入の有無');
     // 給与情報
-    if (this.salaryForm.get('paymentTiming')?.invalid) fields.push('給与支払タイミング');
+    if (this.salaryForm.get('bonusTimes')?.invalid) fields.push('賞与回数');
+    // paymentTimingは必須項目から除外
     return fields;
   }
 }

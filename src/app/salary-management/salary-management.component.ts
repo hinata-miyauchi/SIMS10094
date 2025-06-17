@@ -30,10 +30,22 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
   searchSalaryMonth: string = '';
   searchEmployeeNo: string = '';
   searchSalaryYear: string = '';
+  // 検索実行時に使う値
+  appliedSearchEmployeeNo: string = '';
+  appliedSearchSalaryYear: string = '';
+  appliedSearchSalaryMonth: string = '';
   employeeError: string = '';
   selectedCsvFile: File | null = null;
   importMessage: string = '';
   yearList: number[] = [];
+  loading: boolean = false;
+  bonusTimes: string = '';
+  registerMessage: string = '';
+  private clearMessageListener: (() => void) | null = null;
+  pagedSalaryList: any[] = [];
+  currentSalaryPage: number = 1;
+  salaryPageSize: number = 25;
+  salaryTotalPages: number = 1;
 
   get filteredEmployees() {
     if (!this.searchEmployeeNo) return this.employees;
@@ -42,9 +54,9 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
 
   get filteredSalaryList(): any[] {
     return this.salaryList.filter(item => {
-      const matchNo = !this.searchEmployeeNo || item.employeeNo.includes(this.searchEmployeeNo);
-      const matchYear = !this.searchSalaryYear || item.salaryMonth.startsWith(this.searchSalaryYear + '-');
-      const matchMonth = !this.searchSalaryMonth || item.salaryMonth.endsWith('-' + this.searchSalaryMonth);
+      const matchNo = !this.appliedSearchEmployeeNo || item.employeeNo.includes(this.appliedSearchEmployeeNo);
+      const matchYear = !this.appliedSearchSalaryYear || item.salaryMonth.startsWith(this.appliedSearchSalaryYear + '-');
+      const matchMonth = !this.appliedSearchSalaryMonth || item.salaryMonth.endsWith('-' + this.appliedSearchSalaryMonth);
       return matchNo && matchYear && matchMonth;
     });
   }
@@ -65,6 +77,15 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    this.loading = true;
+    // 会社情報から賞与回数を取得
+    const uid = this.auth.currentUser?.uid;
+    if (!uid) { this.loading = false; return; }
+    const companySnap = await getDocs(query(collection(this.firestore, 'company'), where('uid', '==', uid)));
+    if (!companySnap.empty) {
+      const companyData = companySnap.docs[0].data();
+      this.bonusTimes = companyData['salary']?.bonusTimes || '';
+    }
     // 現在の年月を取得し、デフォルトの検索条件にセット
     const now = new Date();
     this.yearList = [];
@@ -73,8 +94,13 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
     }
     this.searchSalaryYear = String(now.getFullYear());
     this.searchSalaryMonth = ('0' + (now.getMonth() + 1)).slice(-2);
+    // 検索条件の初期値を反映
+    this.appliedSearchEmployeeNo = this.searchEmployeeNo;
+    this.appliedSearchSalaryYear = this.searchSalaryYear;
+    this.appliedSearchSalaryMonth = this.searchSalaryMonth;
     // Firestoreから従業員リストを取得
-    const snap = await getDocs(collection(this.firestore, 'employees'));
+    const empQuery = query(collection(this.firestore, 'employees'), where('uid', '==', uid));
+    const snap = await getDocs(empQuery);
     this.employees = snap.docs.map(doc => {
       const data = doc.data();
       return {
@@ -89,11 +115,17 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
       this.salaryForm.get('fullName')?.setValue(emp ? emp.name : '');
       // 見込み固定給も自動セット
       if (emp) {
-        // Firestoreから従業員詳細を取得してexpected_monthly_incomeをセット
-        getDocs(collection(this.firestore, 'employees')).then(snap => {
-          const empDoc = snap.docs.find(d => d.data()['employee_no'] === empNo);
-          this.salaryForm.get('expectedFixedSalary')?.setValue(empDoc ? empDoc.data()['expected_monthly_income'] || '' : '');
-        });
+        // Firestoreから従業員詳細をuidで絞り込んで取得
+        const uid = this.auth.currentUser?.uid;
+        if (uid) {
+          const empQuery = query(collection(this.firestore, 'employees'), where('uid', '==', uid), where('employee_no', '==', empNo));
+          getDocs(empQuery).then(snap => {
+            const empDoc = snap.docs[0];
+            this.salaryForm.get('expectedFixedSalary')?.setValue(empDoc ? empDoc.data()['expected_monthly_income'] || '' : '');
+          });
+        } else {
+          this.salaryForm.get('expectedFixedSalary')?.setValue('');
+        }
       } else {
         this.salaryForm.get('expectedFixedSalary')?.setValue('');
       }
@@ -108,8 +140,6 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
     });
 
     // Firestoreからuidが一致する給与データを取得
-    const uid = this.auth.currentUser?.uid;
-    if (!uid) return;
     const q = query(collection(this.firestore, 'salaries'), where('uid', '==', uid));
     const salarySnap = await getDocs(q);
     this.salaryList = salarySnap.docs.map(doc => {
@@ -127,6 +157,16 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
         expectedFixedSalary: data['expected_fixed_salary'] ?? ''
       };
     });
+    // 従業員番号の昇順でソート
+    this.salaryList = this.salaryList.sort((a, b) => {
+      const aNo = Number(a.employeeNo);
+      const bNo = Number(b.employeeNo);
+      if (!isNaN(aNo) && !isNaN(bNo)) return aNo - bNo;
+      return String(a.employeeNo).localeCompare(String(b.employeeNo), 'ja');
+    });
+    this.loading = false;
+    this.currentSalaryPage = 1;
+    this.updatePagedSalaryList();
   }
 
   async onSubmit() {
@@ -168,15 +208,31 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
         bonus: formValue.bonus,
         uid
       };
-      const docId = `${formValue.employeeNo}_${formValue.salaryMonth}`;
+      const docId = `${uid}_${formValue.employeeNo}_${formValue.salaryMonth}`;
       try {
         await setDoc(doc(collection(this.firestore, 'salaries'), docId), data);
         this.salaryForm.reset();
-        console.log('Firestoreに登録しました');
+        this.registerMessage = '登録しました。';
+        this.setupAutoClearMessage();
       } catch (e) {
         console.error('Firestore登録エラー:', e);
       }
     }
+  }
+
+  private setupAutoClearMessage() {
+    if (this.clearMessageListener) return;
+    const clear = () => {
+      this.registerMessage = '';
+      window.removeEventListener('click', clear, true);
+      window.removeEventListener('focusin', clear, true);
+      window.removeEventListener('keydown', clear, true);
+      this.clearMessageListener = null;
+    };
+    window.addEventListener('click', clear, true);
+    window.addEventListener('focusin', clear, true);
+    window.addEventListener('keydown', clear, true);
+    this.clearMessageListener = clear;
   }
 
   onCsvFileSelected(event: Event) {
@@ -204,6 +260,13 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
         return;
       }
       const headers = lines[0].split(',');
+      // 許可されたフィールド名リスト
+      const allowedFields = ['employee_no','salary_date','work_days','work_hours','fixed_salary','variable_salary','has_bonus','bonus'];
+      const invalidFields = headers.filter((h: string) => !allowedFields.includes(h.trim()));
+      if (invalidFields.length > 0) {
+        this.importMessage = `許可されていないフィールドが含まれています: ${invalidFields.join(', ')}`;
+        return;
+      }
       let successCount = 0;
       let errorCount = 0;
       for (let i = 1; i < lines.length; i++) {
@@ -214,13 +277,38 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
         }
         const row: any = {};
         headers.forEach((h: string, idx: number) => row[h.trim()] = values[idx].trim());
-        // has_bonusの変換処理を追加
-        if (row.has_bonus === '有') {
+        // has_bonusの変換処理を修正
+        if (row.has_bonus === '有' || row.has_bonus === 'あり' || row.has_bonus === 'true' || row.has_bonus === 'TRUE') {
           row.has_bonus = true;
-        } else if (row.has_bonus === '無') {
+        } else if (row.has_bonus === '無' || row.has_bonus === 'なし') {
           row.has_bonus = false;
+        } else {
+          row.has_bonus = '';
         }
-        const docId = `${row.employee_no}_${row.salary_date}`;
+        // 数値型に変換
+        row.fixed_salary = row.fixed_salary !== undefined && row.fixed_salary !== '' ? Number(row.fixed_salary) : 0;
+        row.variable_salary = row.variable_salary !== undefined && row.variable_salary !== '' ? Number(row.variable_salary) : 0;
+        row.work_days = row.work_days !== undefined && row.work_days !== '' ? Number(row.work_days) : 0;
+        row.work_hours = row.work_hours !== undefined && row.work_hours !== '' ? Number(row.work_hours) : 0;
+        row.bonus = row.bonus !== undefined && row.bonus !== '' ? Number(row.bonus) : 0;
+        // salary（合計）を自動計算
+        row.salary = row.fixed_salary + row.variable_salary;
+        // 従業員マスタから氏名・見込み固定給を自動補完
+        try {
+          const empSnap = await getDocs(query(collection(this.firestore, 'employees'), where('employee_no', '==', row.employee_no)));
+          if (!empSnap.empty) {
+            const empData = empSnap.docs[0].data();
+            row.full_name = empData['full_name'] || row.full_name || '';
+            row.expected_fixed_salary = empData['expected_monthly_income'] || '';
+          } else {
+            row.expected_fixed_salary = '';
+          }
+        } catch (e) {
+          row.expected_fixed_salary = '';
+        }
+        // uidを自動付与
+        row.uid = this.auth.currentUser?.uid || '';
+        const docId = `${row.uid}_${row.employee_no}_${row.salary_date}`;
         try {
           await setDoc(doc(collection(this.firestore, 'salaries'), docId), row);
           successCount++;
@@ -235,19 +323,13 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
   }
 
   downloadSalarySampleCsv() {
-    const sample = `employee_no,full_name,salary_date,work_days,work_hours,salary,has_bonus,bonus\n社員番号,社員名,給与年月,勤務日数,勤務時間,給与,賞与の有無,賞与額\n1007,冨安 健洋,2025-05,20,130,430000,無,\n1008,吉田 麻也,2025-05,20,130,350000,無,\n1004,ジェラード,2025-05,20,135,460000,無,\n1004,ジェラード,2025-04,18,120,400000,有,300000\n1006,クリスティアーノ・ロナウド,2025-05,20,130,520000,無,\n1005,デビッド・ベッカム,2025-05,20,130,550000,無,\n1013,長友 佑都,2025-05,15,90,250000,有,300000\n1010,ネイマール,2025-05,22,150,270000,有,300000\n1006,堂安 律,2025-05,22,155,180000,有,300000\n1001,久保 建英,2025-05,25,180,220000,無,\n1008,セルヒオ・ラモス,2025-05,24,175,650000,無,\n1009,遠藤 航,2025-05,20,120,370000,無,`;
-    const blob = new Blob([sample], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'salary_sample.csv';
-    a.click();
-    window.URL.revokeObjectURL(url);
+    const sample = `従業員番号,給与対象年月【yyyy-mm】,勤務日数,勤務時間,固定的賃金,変動的賃金,賞与有無【あり・なし】,賞与額【（賞与有無がありの場合は必須項目）金額】\n必須項目,必須項目,必須項目,必須項目,必須項目,必須項目,必須項目,条件付き必須項目\nemployee_no,salary_date,work_days,work_hours,fixed_salary,variable_salary,has_bonus,bonus\n1001,2025-07,20,160,250000,10000,なし,\n1002,2025-07,20,160,240000,10000,あり,10000`;
+    this.downloadCSV(sample, 'salary_sample.csv');
   }
 
   downloadSalaryFormatCsv() {
-    const format = 'employee_no,full_name,salary_date,work_days,work_hours,salary,has_bonus,bonus\n';
-    const blob = new Blob([format], { type: 'text/csv' });
+    const header = 'employee_no,salary_date,work_days,work_hours,fixed_salary,variable_salary,has_bonus,bonus';
+    const blob = new Blob([header + '\n'], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -258,6 +340,11 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
 
   async setTab(index: number) {
     this.tabIndex = index;
+    if (index !== 1) {
+      this.salaryForm.reset();
+      this.registerMessage = '';
+      this.employeeError = '';
+    }
     this.importMessage = '';
     if (index === 0) {
       await this.fetchSalaryList();
@@ -275,8 +362,9 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
   }
 
   async fetchSalaryList() {
+    this.loading = true;
     const uid = this.auth.currentUser?.uid;
-    if (!uid) return;
+    if (!uid) { this.loading = false; return; }
     const q = query(collection(this.firestore, 'salaries'), where('uid', '==', uid));
     const salarySnap = await getDocs(q);
     this.salaryList = salarySnap.docs.map(doc => {
@@ -294,17 +382,66 @@ export class SalaryManagementComponent implements OnInit, OnDestroy {
         expectedFixedSalary: data['expected_fixed_salary'] ?? ''
       };
     });
+    // 従業員番号の昇順でソート
+    this.salaryList = this.salaryList.sort((a, b) => {
+      const aNo = Number(a.employeeNo);
+      const bNo = Number(b.employeeNo);
+      if (!isNaN(aNo) && !isNaN(bNo)) return aNo - bNo;
+      return String(a.employeeNo).localeCompare(String(b.employeeNo), 'ja');
+    });
+    this.loading = false;
+    this.currentSalaryPage = 1;
+    this.updatePagedSalaryList();
   }
 
   onSearch() {
-    // 検索条件でフィルタリングをトリガー（getterなので再描画のみ）
-    // 何もしなくてもgetterで自動反映されるが、明示的に呼ぶ場合用
+    this.appliedSearchEmployeeNo = this.searchEmployeeNo;
+    this.appliedSearchSalaryYear = this.searchSalaryYear;
+    this.appliedSearchSalaryMonth = this.searchSalaryMonth;
+    this.currentSalaryPage = 1;
+    this.updatePagedSalaryList();
   }
 
   onClearSearch() {
     this.searchEmployeeNo = '';
     this.searchSalaryYear = '';
     this.searchSalaryMonth = '';
-    this.onSearch();
+    this.appliedSearchEmployeeNo = '';
+    this.appliedSearchSalaryYear = '';
+    this.appliedSearchSalaryMonth = '';
+    this.currentSalaryPage = 1;
+    this.updatePagedSalaryList();
+  }
+
+  updatePagedSalaryList() {
+    const filtered = this.filteredSalaryList;
+    this.salaryTotalPages = Math.max(1, Math.ceil(filtered.length / this.salaryPageSize));
+    const start = (this.currentSalaryPage - 1) * this.salaryPageSize;
+    const end = start + this.salaryPageSize;
+    this.pagedSalaryList = filtered.slice(start, end);
+  }
+
+  goToSalaryPage(page: number) {
+    if (page < 1 || page > this.salaryTotalPages) return;
+    this.currentSalaryPage = page;
+    this.updatePagedSalaryList();
+  }
+
+  nextSalaryPage() {
+    this.goToSalaryPage(this.currentSalaryPage + 1);
+  }
+
+  prevSalaryPage() {
+    this.goToSalaryPage(this.currentSalaryPage - 1);
+  }
+
+  private downloadCSV(data: string, filename: string) {
+    const blob = new Blob([data], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 } 

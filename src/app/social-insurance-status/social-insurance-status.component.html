@@ -2,7 +2,7 @@
   <div class="top-bar">
     <button class="home-btn" (click)="goHome()">ホームへ戻る</button>
   </div>
-  <h2 class="main-title">社会保険加入状況一覧</h2>
+  <h2 class="main-title">社会保険料支払（加入）状況一覧</h2>
   <form class="search-form" (submit)="$event.preventDefault()">
     <div class="form-fields">
       <div class="form-group">
@@ -13,9 +13,15 @@
         <button class="search-btn" type="button" (click)="onSearchEmployeeNo()">検索</button>
         <button class="search-btn" type="button" (click)="onClearSearch()">クリア</button>
       </div>
+      <div style="flex: 1; display: flex; align-items: flex-end; justify-content: flex-end; margin-bottom: 1.5rem;">
+        <span style="color: #1976d2; font-weight: bold; font-size: 1em; white-space: nowrap;">※行をクリックすると、社会保険加入状況を変更できます。（任意加入対応）</span>
+      </div>
     </div>
   </form>
   <div style="margin-bottom: 1.5rem;"></div>
+  <div *ngIf="loading" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255,255,255,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+    <span style="font-size: 2rem; color: #1976d2; font-weight: bold;">読み込み中…</span>
+  </div>
   <table class="social-insurance-table">
     <thead>
       <tr>
@@ -36,7 +42,10 @@
         <td><span [class.joined]="s.healthInsurance">{{s.healthInsurance ? '●' : '×'}}</span></td>
         <td><span [class.joined]="s.nursingCareInsurance">{{s.nursingCareInsurance ? '●' : '×'}}</span></td>
         <td><span [class.joined]="s.pension">{{s.pension ? '●' : '×'}}</span></td>
-        <td>{{s.remarks || ''}}</td>
+        <td>
+          <span *ngIf="s.remarks" class="remarks-message">{{s.remarks}}</span>
+          <span *ngIf="s.manualInsuranceEdit" class="manual-edit-label">手動変更あり</span>
+        </td>
       </tr>
     </tbody>
   </table>
@@ -64,5 +73,19 @@
     background: #1976d2 !important;
     color: #fff !important;
     font-weight: bold;
+  }
+  .remarks-message {
+    display: block;
+    color: #1976d2;
+    white-space: pre-line;
+    word-break: break-all;
+    margin-bottom: 2px;
+    font-weight: 500;
+  }
+  .manual-edit-label {
+    display: block;
+    color: #d32f2f;
+    font-weight: bold;
+    margin-top: 2px;
   }
 </style> 

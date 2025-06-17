@@ -427,3 +427,21 @@ input[type="file"] {
   flex: 1 1 0;
   min-width: 0;
 }
+
+.dependent-warning {
+  color: #d32f2f;
+  background: #fffbe6;
+  border-left: 4px solid #fbc02d;
+  padding: 8px 12px;
+  margin-top: 6px;
+  font-weight: bold;
+  border-radius: 4px;
+  font-size: 0.98em;
+}
+
+.active-page {
+  background: #1976d2 !important;
+  color: #fff !important;
+  font-weight: bold;
+  border: 1px solid #1976d2 !important;
+}

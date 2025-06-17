@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { getFirestore, collection, addDoc } from '@angular/fire/firestore';
+import { getFirestore, collection, addDoc, doc, setDoc, getDocs, query, where } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
+import { calculateSocialInsuranceStatus } from '../social-insurance-status/social-insurance-status.component';
 
 @Component({
   selector: 'app-master-csv-import',
@@ -175,10 +176,54 @@ export class MasterCsvImportComponent {
               data.pension_insurance_rate_employer = Number(raw);
               break;
             default:
-              data[header] = raw;
+              // 障がいの有無・海外勤務の有無・赴任予定期間の変換
+              if (header === 'has_disability' || header === 'has_overseas' || header === 'assignment_period') {
+                if (header === 'has_disability' || header === 'has_overseas') {
+                  if (raw === 'あり') data[header] = 'true';
+                  else if (raw === 'なし') data[header] = 'false';
+                  else data[header] = '';
+                } else {
+                  data[header] = String(raw);
+                }
+              } else {
+                data[header] = raw;
+              }
           }
         });
-        await addDoc(collection(db, 'insuranceRates'), data);
+        // uidを取得
+        const uid = (window as any).firebaseAuth?.currentUser?.uid || '';
+        if (!uid) throw new Error('ログイン情報が取得できません');
+        // ドキュメントID生成（uid_従業員番号）
+        const docId = `${uid}_${data.employee_no}`;
+        const employeeToSave = {
+          ...data,
+          docId,
+          healthInsurance: data.healthInsurance ?? false,
+          nursingCareInsurance: data.nursingCareInsurance ?? false,
+          pension: data.pension ?? false,
+          remarks: '',
+          manualInsuranceEdit: false,
+          uid: uid
+        };
+        employeeToSave.healthInsurance = employeeToSave.healthInsurance ?? false;
+        employeeToSave.nursingCareInsurance = employeeToSave.nursingCareInsurance ?? false;
+        employeeToSave.pension = employeeToSave.pension ?? false;
+        employeeToSave.remarks = employeeToSave.remarks ?? '';
+        employeeToSave.manualInsuranceEdit = employeeToSave.manualInsuranceEdit ?? false;
+        // 会社情報取得
+        const companySnap = await getDocs(query(collection(db, 'company'), where('uid', '==', employeeToSave.uid)));
+        const companyData = !companySnap.empty ? companySnap.docs[0].data() : {};
+        if (!employeeToSave.manualInsuranceEdit) {
+          const result = calculateSocialInsuranceStatus(employeeToSave, companyData);
+          employeeToSave.healthInsurance = result.healthInsurance;
+          employeeToSave.nursingCareInsurance = result.nursingCareInsurance;
+          employeeToSave.pension = result.pension;
+          employeeToSave.remarks = result.remarks;
+        }
+        // has_disability, has_overseasを'あり'→'true'、'なし'→'false'、それ以外は''に変換
+        employeeToSave.has_disability = (employeeToSave.has_disability === 'あり') ? 'true' : (employeeToSave.has_disability === 'なし') ? 'false' : employeeToSave.has_disability;
+        employeeToSave.has_overseas = (employeeToSave.has_overseas === 'あり') ? 'true' : (employeeToSave.has_overseas === 'なし') ? 'false' : employeeToSave.has_overseas;
+        await setDoc(doc(db, 'employees', docId), employeeToSave, { merge: true });
       }
       this.message = 'インポートが完了しました。3秒後にホームに戻ります。';
       setTimeout(() => {
@@ -236,7 +281,12 @@ export class MasterCsvImportComponent {
               data[header] = cols[idx];
           }
         });
-        await addDoc(collection(db, 'grades'), data);
+        // uidを取得
+        const uid = (window as any).firebaseAuth?.currentUser?.uid || '';
+        if (!uid) throw new Error('ログイン情報が取得できません');
+        // ドキュメントID生成
+        const docId = `${uid}_${data.grade}`;
+        await addDoc(collection(db, 'grades'), { ...data, docId });
       }
       this.message = '等級インポートが完了しました。3秒後にホームに戻ります。';
       setTimeout(() => {

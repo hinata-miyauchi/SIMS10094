@@ -20,20 +20,20 @@
             <input [(ngModel)]="searchEmployeeNo" name="searchEmployeeNo" type="text" placeholder="社員番号で検索" autocomplete="off" />
           </div>
           <div class="form-group">
-            <label>給与年</label>
+            <label>給与対象年</label>
             <select [(ngModel)]="searchSalaryYear" name="searchSalaryYear">
               <option value="">--</option>
               <option *ngFor="let y of yearList" [value]="y">{{y}}</option>
             </select>
           </div>
           <div class="form-group">
-            <label>給与月</label>
+            <label>給与対象月</label>
             <select [(ngModel)]="searchSalaryMonth" name="searchSalaryMonth">
               <option value="">--</option>
               <option *ngFor="let m of ['01','02','03','04','05','06','07','08','09','10','11','12']" [value]="m">{{m}}</option>
             </select>
           </div>
-          <div class="form-group" style="align-self: flex-end; min-width: 120px; display: flex; gap: 8px;">
+          <div class="form-group button-group" style="align-self: flex-end; min-width: 120px; display: flex; gap: 8px; flex-direction: row;">
             <button class="search-btn" type="button" (click)="onSearch()">検索</button>
             <button class="search-btn" type="button" (click)="onClearSearch()">クリア</button>
           </div>
@@ -45,93 +45,112 @@
             <tr>
               <th>従業員番号</th>
               <th>氏名</th>
-              <th>給与年月</th>
+              <th>給与対象年月</th>
               <th>勤務日数</th>
               <th>勤務時間</th>
               <th>給与</th>
-              <th>固定的賃金</th>
               <th>賞与</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of filteredSalaryList"
-                [ngClass]="{'diff-row': item.fixedSalary != item.expectedFixedSalary}"
-                [attr.title]="item.fixedSalary != item.expectedFixedSalary ? '固定的賃金と見込み固定給に差が生じているため、随時改定が必要な可能性もしくは見込み固定給変更の必要あり' : null">
+            <tr *ngFor="let item of pagedSalaryList">
               <td>{{item.employeeNo}}</td>
               <td>{{item.employeeName}}</td>
               <td>{{item.salaryMonth}}</td>
               <td>{{item.workDays}}</td>
               <td>{{item.workHours}}</td>
               <td>{{item.salary | number}}</td>
-              <td>
-                <span [ngClass]="{'diff-value': item.fixedSalary != item.expectedFixedSalary}">{{item.fixedSalary | number}}</span>
-              </td>
               <td>{{item.bonus != null && item.bonus !== '' ? (item.bonus | number) : 0}}</td>
             </tr>
-            <tr *ngIf="filteredSalaryList.length === 0">
-              <td colspan="8" style="text-align:center; color:#888;">該当データがありません</td>
+            <tr *ngIf="pagedSalaryList.length === 0">
+              <td colspan="7" style="text-align:center; color:#888;">該当データがありません</td>
             </tr>
           </tbody>
         </table>
+        <div class="pagination" *ngIf="salaryTotalPages > 1" style="margin-top: 1.5rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem;">
+          <button (click)="prevSalaryPage()" [disabled]="currentSalaryPage === 1" style="padding: 0.3em 1em; border-radius: 4px; border: none; background: #e0e0e0; color: #222; font-size: 1em; cursor: pointer;">前へ</button>
+          <ng-container *ngFor="let page of [].constructor(salaryTotalPages); let i = index">
+            <button (click)="goToSalaryPage(i+1)" [disabled]="currentSalaryPage === (i+1)" [ngClass]="{'active-page': currentSalaryPage === (i+1)}" style="padding: 0.3em 0.9em; border-radius: 4px; border: none; background: #f5f5f5; color: #222; font-size: 1em; cursor: pointer; margin: 0 2px;">{{i+1}}</button>
+          </ng-container>
+          <button (click)="nextSalaryPage()" [disabled]="currentSalaryPage === salaryTotalPages" style="padding: 0.3em 1em; border-radius: 4px; border: none; background: #e0e0e0; color: #222; font-size: 1em; cursor: pointer;">次へ</button>
+        </div>
       </div>
     </ng-container>
     <ng-container *ngIf="tabIndex === 1">
       <div *ngIf="employeeError" class="error">{{employeeError}}</div>
+      <div *ngIf="registerMessage" class="register-message" style="border: 1px solid #f44336; background: #fff5f5; color: #d32f2f; padding: 16px; border-radius: 8px; margin-bottom: 16px; font-size: 1.1rem;">{{registerMessage}}</div>
       <button class="register-btn" type="button" (click)="onSubmit()">登録</button>
       <form [formGroup]="salaryForm" class="company-form">
         <div class="form-fields">
-          <div class="form-group">
-            <label>従業員番号 <span class="required">*</span></label>
-            <input formControlName="employeeNo" type="text" required />
+          <div class="row">
+            <div class="form-group">
+              <label>従業員番号 <span class="required">*</span></label>
+              <input formControlName="employeeNo" type="text" required />
+            </div>
+            <div class="form-group">
+              <label>氏名 <span class="required">*</span></label>
+              <input formControlName="fullName" readonly placeholder="自動で表示されます" />
+            </div>
+            <div class="form-group">
+              <label>標準報酬月額（見込み固定賃金）</label>
+              <input formControlName="expectedFixedSalary" readonly placeholder="自動で表示されます" />
+            </div>
           </div>
-          <div class="form-group">
-            <label>氏名（自動表示） <span class="required">*</span></label>
-            <input formControlName="fullName" readonly placeholder="自動で表示されます" />
-          </div>
-          <div class="form-group">
-            <label>見込み固定給（自動表示）</label>
-            <input formControlName="expectedFixedSalary" readonly placeholder="自動で表示されます" />
-          </div>
-          <div class="form-group">
-            <label>給与年月 <span class="required">*</span></label>
-            <input formControlName="salaryMonth" type="month" required />
-          </div>
-          <div class="form-group">
-            <label>勤務日数 <span class="required">*</span></label>
-            <input formControlName="workDays" type="number" min="0" required />
-          </div>
-          <div class="form-group">
-            <label>勤務時間 <span class="required">*</span></label>
-            <input formControlName="workHours" type="number" min="0" required />
-          </div>
-          <div class="form-group">
-            <label>固定的賃金 <span class="required">*</span>
-              <span class="tooltip-icon" tabindex="0">？
-                <span class="tooltip-text">
-                  基本給、通勤手当（毎月一定額支給の場合）、住宅手当、<br>
-                  役職手当などの基本毎月変動しない手当の合計
+          <div class="row">
+            <div class="form-group">
+              <label>給与対象年月 <span class="required">*</span></label>
+              <input formControlName="salaryMonth" type="month" required />
+            </div>
+            <div class="form-group">
+              <label>勤務日数 <span class="required">*</span>
+                <span class="tooltip-icon" tabindex="0">？
+                  <span class="tooltip-text">月の合計勤務日数</span>
                 </span>
-              </span>
-            </label>
-            <input formControlName="fixedSalary" type="number" min="0" required />
-          </div>
-          <div class="form-group">
-            <label>変動的賃金 <span class="required">*</span>
-              <span class="tooltip-icon" tabindex="0">？
-                <span class="tooltip-text">
-                  時間外手当、深夜・休日手当、通勤手当（出勤日数などによって変動する場合）、<br>
-                  歩合給（インセンティブ）、その他手当（一時的な支給）の合計
+              </label>
+              <input formControlName="workDays" type="number" min="0" required />
+            </div>
+            <div class="form-group">
+              <label>勤務時間 <span class="required">*</span>
+                <span class="tooltip-icon" tabindex="0">？
+                  <span class="tooltip-text">月の合計勤務時間</span>
                 </span>
-              </span>
-            </label>
-            <input formControlName="variableSalary" type="number" min="0" required />
+              </label>
+              <input formControlName="workHours" type="number" min="0" required />
+            </div>
           </div>
-          <div class="form-group">
-            <label>賞与有無 <span class="required">*</span></label>
-            <select formControlName="hasBonus" required>
-              <option value="true">あり</option>
-              <option value="false">なし</option>
-            </select>
+          <div class="row">
+            <div class="form-group">
+              <label>固定賃金 <span class="required">*</span>
+                <span class="tooltip-icon" tabindex="0">？
+                  <span class="tooltip-text">
+                    基本給、通勤手当（毎月一定額支給の場合）、住宅手当、<br>
+                    役職手当などの基本毎月変動しない手当の合計
+                  </span>
+                </span>
+              </label>
+              <input formControlName="fixedSalary" type="number" min="0" required />
+            </div>
+            <div class="form-group">
+              <label>変動賃金 <span class="required">*</span>
+                <span class="tooltip-icon" tabindex="0">？
+                  <span class="tooltip-text">
+                    時間外手当、深夜・休日手当、通勤手当（出勤日数などによって変動する場合）、<br>
+                    歩合給（インセンティブ）、その他手当（一時的な支給）の合計
+                  </span>
+                </span>
+              </label>
+              <input formControlName="variableSalary" type="number" min="0" required />
+            </div>
+            <div class="form-group">
+              <label>賞与有無 <span class="required">*</span></label>
+              <select formControlName="hasBonus" required>
+                <option value="true">あり</option>
+                <option value="false">なし</option>
+              </select>
+            </div>
+          </div>
+          <div *ngIf="bonusTimes === '4回以上'" class="bonus-warning">
+            年間賞与回数が4回以上の場合は給与管理の際に賞与欄ではなく給与欄に記入してください。
           </div>
           <div class="form-group" *ngIf="salaryForm.get('hasBonus')?.value === 'true'">
             <label>賞与額 <span class="required">*</span></label>
@@ -141,37 +160,33 @@
       </form>
     </ng-container>
     <ng-container *ngIf="tabIndex === 2">
-      <div class="import-csv-section modern">
-        <h2>給与一括登録インポート</h2>
-        <div class="import-csv-bar modern">
-          <label class="file-label modern">
-            <span class="file-icon">
-              <svg width="20" height="20" viewBox="0 0 20 20"><path d="M16.5 9.5a.75.75 0 0 0-.75.75v4.25a1 1 0 0 1-1 1h-9.5a1 1 0 0 1-1-1v-4.25a.75.75 0 0 0-1.5 0v4.25A2.5 2.5 0 0 0 5.25 17h9.5a2.5 2.5 0 0 0 2.5-2.5v-4.25a.75.75 0 0 0-.75-.75z"/><path d="M10.75 13.25v-8.19l2.22 2.22a.75.75 0 1 0 1.06-1.06l-3.5-3.5a.75.75 0 0 0-1.06 0l-3.5 3.5a.75.75 0 1 0 1.06 1.06l2.22-2.22v8.19a.75.75 0 0 0 1.5 0z"/></svg>
+      <div class="import-csv-outer">
+        <div class="import-csv-section modern">
+          <div style="color: #1976d2; font-size: 1.02em; margin-bottom: 12px; font-weight: 500;">
+            ※登録作業はフォーマットcsvを用いて作成してください。サンプルcsvに記載のように記入してください。不当な値を入れると正確に登録されない可能性があります。<br>
+            <span style="color: red;">
+              インポート時は、英語のフィールド名（employee_noやsalary_dateなど）が記載されているフォーマットcsvの1行目（サンプルcsvの3行目）は残して2行目から記載したものをインポートしてください。
             </span>
-            <span>ファイルを選択</span>
-            <input type="file" accept=".csv" (change)="onCsvFileSelected($event)" />
-          </label>
-          <span class="selected-file-name modern">
-            <svg width="18" height="18" viewBox="0 0 20 20"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2h7A2.5 2.5 0 0 1 16 4.5v11A2.5 2.5 0 0 1 13.5 18h-7A2.5 2.5 0 0 1 4 15.5v-11zm2.5-1a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1v-11a1 1 0 0 0-1-1h-7z"/><path d="M7 7.5a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5A.75.75 0 0 1 7 7.5zm0 3a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5A.75.75 0 0 1 7 10.5zm0 3a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5A.75.75 0 0 1 7 13.5z"/></svg>
-            {{ selectedCsvFile?.name || '選択されていません' }}
-          </span>
-        </div>
-        <button class="import-btn modern" (click)="importSalaryCsv()" [disabled]="!selectedCsvFile">
-          <svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 2a.75.75 0 0 1 .75.75v8.19l2.22-2.22a.75.75 0 1 1 1.06 1.06l-3.5 3.5a.75.75 0 0 1-1.06 0l-3.5-3.5a.75.75 0 1 1 1.06-1.06l2.22 2.22V2.75A.75.75 0 0 1 10 2z"/><path d="M4.75 17a.75.75 0 0 1 0-1.5h10.5a.75.75 0 0 1 0 1.5H4.75z"/></svg>
-          インポートする
-        </button>
-        <span class="import-message modern">{{importMessage}}</span>
-        <div class="sample-info modern">
-          <button (click)="downloadSalarySampleCsv()">
-            <svg width="18" height="18" viewBox="0 0 20 20"><path d="M10 2a.75.75 0 0 1 .75.75v8.19l2.22-2.22a.75.75 0 1 1 1.06 1.06l-3.5 3.5a.75.75 0 0 1-1.06 0l-3.5-3.5a.75.75 0 1 1 1.06-1.06l2.22 2.22V2.75A.75.75 0 0 1 10 2z"/><path d="M4.75 17a.75.75 0 0 1 0-1.5h10.5a.75.75 0 0 1 0 1.5H4.75z"/></svg>
-            サンプルCSVをダウンロード
-          </button>
-          <button (click)="downloadSalaryFormatCsv()">
-            <svg width="18" height="18" viewBox="0 0 20 20"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2h7A2.5 2.5 0 0 1 16 4.5v11A2.5 2.5 0 0 1 13.5 18h-7A2.5 2.5 0 0 1 4 15.5v-11zm2.5-1a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1v-11a1 1 0 0 0-1-1h-7z"/><path d="M7 7.5a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5A.75.75 0 0 1 7 7.5zm0 3a.75.75 0 0 1 .75-.75h4.5a.75.75 0 0 1 0 1.5h-4.5A.75.75 0 0 1 7 10.5zm0 3a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5A.75.75 0 0 1 7 13.5z"/></svg>
-            フォーマットCSVをダウンロード
-          </button>
+          </div>
+          <div class="import-csv-bar modern">
+            <label class="file-label">
+              ファイルを選択
+              <input type="file" accept=".csv" (change)="onCsvFileSelected($event)" />
+            </label>
+            <span class="selected-file-name modern">{{ selectedCsvFile?.name || '選択されていません' }}</span>
+          </div>
+          <button class="import-btn modern" (click)="importSalaryCsv()" [disabled]="!selectedCsvFile || loading">インポートする</button>
+          <span class="import-message modern">{{ importMessage }}</span>
+          <div *ngIf="loading">インポート中...</div>
+          <div class="sample-info modern">
+            <button (click)="downloadSalarySampleCsv()">サンプルCSVをダウンロード</button>
+            <button (click)="downloadSalaryFormatCsv()">フォーマットCSVをダウンロード</button>
+          </div>
         </div>
       </div>
     </ng-container>
+  </div>
+  <div *ngIf="loading" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255,255,255,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+    <span style="font-size: 2rem; color: #1976d2; font-weight: bold;">読み込み中…</span>
   </div>
 </div> 

@@ -18,10 +18,12 @@ export class AdminInsuranceRateListComponent implements OnInit {
   prefectures: string[] = [];
   searchYear: string = '';
   searchPrefecture: string = '';
+  loading: boolean = false;
 
   constructor(private firestore: Firestore) {}
 
   async ngOnInit() {
+    this.loading = true;
     const db = this.firestore;
     const snapshot = await getDocs(collection(db, 'insuranceRates'));
     this.insuranceRates = snapshot.docs.map(doc => doc.data());
@@ -38,6 +40,14 @@ export class AdminInsuranceRateListComponent implements OnInit {
       '福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県'
     ];
     this.prefectures = jpPrefList.filter(p => this.insuranceRates.some(r => r.prefecture_name === p));
+    const currentYear = new Date().getFullYear();
+    if (this.years.includes(currentYear)) {
+      this.searchYear = String(currentYear);
+    } else {
+      this.searchYear = '';
+    }
+    this.loading = false;
+    this.filterRates();
   }
 
   filterRates() {
@@ -54,10 +64,6 @@ export class AdminInsuranceRateListComponent implements OnInit {
   clearSearch() {
     this.searchYear = '';
     this.searchPrefecture = '';
-    this.filterRates();
-  }
-
-  ngDoCheck() {
     this.filterRates();
   }
 } 

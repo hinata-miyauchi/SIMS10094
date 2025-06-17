@@ -130,19 +130,20 @@ th {
   background: #f5f5ff;
   margin-top: 4px;
 }
-.clear-btn {
-  background: linear-gradient(90deg, #a8a8ff 0%, #4a4ae6 100%);
+.search-btn, .clear-btn {
+  padding: 8px 22px;
+  background: #4a90e2;
   color: #fff;
-  font-weight: bold;
   border: none;
-  border-radius: 8px;
-  padding: 8px 20px;
-  font-size: 1em;
+  border-radius: 6px;
+  font-size: 1.05em;
+  font-weight: bold;
   cursor: pointer;
-  transition: filter 0.2s;
+  transition: background 0.2s;
+  margin-top: 0;
 }
-.clear-btn:hover {
-  filter: brightness(0.95);
+.search-btn:hover, .clear-btn:hover {
+  background: #357abd;
 }
 @media (max-width: 600px) {
   .search-fields {
@@ -171,4 +172,77 @@ th {
 }
 .home-btn:hover {
   background: #1565c0;
+}
+
+.form-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem 2.2rem;
+  align-items: flex-end;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 210px;
+  flex: 1 1 220px;
+  margin-bottom: 0.5rem;
+}
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 0.18rem;
+  font-size: 1.01rem;
+  color: #3a3a5a;
+  letter-spacing: 0.01em;
+}
+.form-fields select {
+  padding: 0.55rem 0.9rem;
+  border: 1.5px solid #d6d6f7;
+  border-radius: 8px;
+  font-size: 1.04rem;
+  background: #fff;
+  transition: border 0.2s;
+}
+.form-fields select:focus {
+  border: 1.5px solid #1976d2;
+  outline: none;
+  background: #fff;
+}
+.search-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  min-width: 90px;
+}
+.search-btn:hover {
+  background: #1565c0;
+}
+.clear-btn {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  min-width: 90px;
+}
+.clear-btn:hover {
+  background: #1565c0;
+}
+
+.form-group[style*="min-width: 180px"] {
+  min-width: 180px !important;
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+  flex-direction: row;
+  align-items: center;
 } 

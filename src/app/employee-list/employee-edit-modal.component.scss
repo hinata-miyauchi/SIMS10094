@@ -241,4 +241,14 @@
     min-width: 220px;
     flex: 1 1 100%;
   }
+}
+.dependent-warning {
+  color: #d32f2f;
+  background: #fffbe6;
+  border-left: 4px solid #fbc02d;
+  padding: 8px 12px;
+  margin-top: 6px;
+  font-weight: bold;
+  border-radius: 4px;
+  font-size: 0.98em;
 } 

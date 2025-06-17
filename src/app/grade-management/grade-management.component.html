@@ -7,7 +7,7 @@
     <div class="form-fields">
       <div class="form-group">
         <label for="searchEmployeeNo">従業員番号</label>
-        <input id="searchEmployeeNo" [(ngModel)]="searchEmployeeNo" name="searchEmployeeNo" type="text" placeholder="社員番号で検索" autocomplete="off" />
+        <input id="searchEmployeeNo" [(ngModel)]="searchEmployeeNo" name="searchEmployeeNo" type="text" placeholder="従業員番号で検索" autocomplete="off" />
       </div>
       <div class="form-group">
         <label for="searchYear">対象年</label>
@@ -27,6 +27,9 @@
         <button class="search-btn" type="button" (click)="onSearch()">検索</button>
         <button class="search-btn" type="button" (click)="onClearSearch()">クリア</button>
       </div>
+      <div style="align-self: flex-end; margin-left: 24px; color: #1976d2; font-size: 1.05em; font-weight: 500; white-space: nowrap;">
+        ※対象年月の給与登録した従業員（社会保険加入中）のみ表示します。（社会保険料が発生しない人は表示しません）
+      </div>
     </div>
   </form>
   <table class="grade-table">
@@ -35,24 +38,112 @@
         <th>従業員番号</th>
         <th>対象年月</th>
         <th>従業員名</th>
-        <th>見込み固定給</th>
-        <th>固定的賃金</th>
-        <th>等級</th>
-        <th>差額</th>
-        <th>差一致</th>
+        <th>
+          標準報酬月額<br>
+          （見込み固定賃金）
+          <span class="tooltip-icon" tabindex="0" style="margin-left:4px;">
+            <span class="tooltip-qmark-orange">？</span>
+            <span class="tooltip-text">新入社員の場合は、見込み固定賃金を表示しています。
+            </span>
+          </span>
+        </th>
+        <th>固定賃金
+          <span class="tooltip-icon" tabindex="0" style="margin-left:4px;">
+            <span class="tooltip-qmark-orange">？</span>
+            <span class="tooltip-text">実際に支払われる固定給（基本給、通勤手当（毎月一定額支給の場合）、住宅手当、役職手当などの毎月変動しない手当）の合計</span>
+          </span>
+        </th>
+        <th>給与
+          <span class="tooltip-icon" tabindex="0" style="margin-left:4px;">
+            <span class="tooltip-qmark-orange">？</span>
+            <span class="tooltip-text">対象月の給与金額です。（賞与は除く）</span>
+          </span>
+        </th>
+        <th>給与金額<br>
+          に基づく等級
+          <span class="tooltip-icon" tabindex="0" style="margin-left:4px;">
+            <span class="tooltip-qmark-orange">？</span>
+            <span class="tooltip-text">対象月の給与金額（賞与は除く）に基づく等級。（健康・介護保険の等級を表示しています。）</span>
+          </span>
+        </th>
+        <th>
+          標準報酬月額<br>
+          に基づく等級
+          <span class="tooltip-icon" tabindex="0" style="margin-left:4px;">
+            <span class="tooltip-qmark-orange">？</span>
+            <span class="tooltip-text">標準報酬月額に基づく等級。（健康・介護保険の等級を表示しています。）</span>
+          </span>
+        </th>
+        <th>等級差分
+          <span class="tooltip-icon" tabindex="0" style="margin-left:4px;">
+            <span class="tooltip-qmark-orange">？</span>
+            <span class="tooltip-text">給与金額に基づく等級と標準報酬月額に基づく等級の差分</span>
+          </span>
+        </th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let row of salaryRows">
+      <tr *ngFor="let row of salaryRows"
+          [ngClass]="{'diff-row': row.gradeDiffAlert}"
+          [attr.title]="row.gradeDiffAlert ? '給与金額に基づく等級と標準報酬月額に基づく等級に2等級以上の差があります。
+          随時改定が必要な可能性あり' : null">
         <td>{{row.employeeNo}}</td>
         <td>{{row.salaryMonth}}</td>
         <td>{{row.employeeName}}</td>
-        <td>{{row.expectedFixedSalary | number}}</td>
-        <td>{{row.fixedSalary | number}}</td>
-        <td>{{row.grade}}</td>
-        <td>{{row.diff | number}}</td>
-        <td>{{row.match ? '〇' : '×'}}</td>
+        <td [ngClass]="{'diff-text': row.gradeDiffAlert}">{{row.expectedFixedSalary | number}}</td>
+        <td [ngClass]="{'diff-text': row.gradeDiffAlert}">{{row.fixedSalary | number}}</td>
+        <td [ngClass]="{'diff-text': row.gradeDiffAlert}">{{row.salary | number}}</td>
+        <td [ngClass]="{'diff-text': row.gradeDiffAlert}">{{row.salaryGrade}}</td>
+        <td [ngClass]="{'diff-text': row.gradeDiffAlert}">{{row.grade}}</td>
+        <td [ngClass]="{'diff-text': row.gradeDiffAlert}">{{row.gradeDiff}}</td>
       </tr>
     </tbody>
   </table>
-</div> 
+</div>
+
+<div *ngIf="loading" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255,255,255,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+  <span style="font-size: 2rem; color: #1976d2; font-weight: bold;">読み込み中…</span>
+</div>
+
+<style>
+  .tooltip-icon {
+    display: inline-block;
+    position: relative;
+    color: #1976d2;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 1.2em;
+    height: 1.2em;
+    text-align: center;
+    line-height: 1.2em;
+    background: #e3f2fd;
+    font-size: 0.95em;
+    cursor: pointer;
+    margin-bottom: 2px;
+  }
+  .tooltip-icon:focus .tooltip-text,
+  .tooltip-icon:hover .tooltip-text {
+    display: block;
+  }
+  .tooltip-text {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: 120%;
+    transform: translateX(-50%);
+    background: #fff;
+    color: #333;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 0.95em;
+    white-space: nowrap;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .tooltip-qmark-orange {
+    color: #ff9800;
+    font-weight: bold;
+    font-size: 1em;
+  }
+</style> 

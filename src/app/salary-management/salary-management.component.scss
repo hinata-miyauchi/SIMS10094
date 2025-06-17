@@ -96,11 +96,20 @@ h2 {
   flex-wrap: wrap;
   gap: 1.2rem 2.2rem;
 }
+.form-fields > .row {
+  display: flex;
+  gap: 1.2rem;
+  width: 100%;
+}
+.form-fields > .row .form-group {
+  flex: 1 1 220px;
+  min-width: 220px;
+  max-width: 100%;
+}
 .form-group {
   display: flex;
   flex-direction: column;
-  min-width: 210px;
-  flex: 1 1 220px;
+  flex: 1 1 0;
   margin-bottom: 0.5rem;
 }
 .form-group label {
@@ -251,227 +260,119 @@ h2 {
     flex-direction: column;
     gap: 12px;
   }
+  .form-fields > .row {
+    flex-wrap: wrap;
+  }
+  .form-fields > .row .form-group {
+    min-width: 220px;
+    flex: 1 1 100%;
+  }
   .modern-employee-table.salary-table th, .modern-employee-table.salary-table td {
     padding: 0.6em 0.5em;
     font-size: 0.98em;
   }
 }
 
-/* --- 給与一括登録タブのCSVインポートUIを従業員一括登録と同じデザインに統一 --- */
-.import-csv-section {
-  max-width: 420px;
-  margin: 0 auto 2rem auto;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(80, 80, 160, 0.10);
-  padding: 2.5rem 2rem;
-}
-.import-csv-bar {
+/* --- 従業員一括登録画面と完全一致させるためのimport-csvデザイン --- */
+.import-csv-outer {
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 1.2rem;
-  margin-bottom: 0.7rem;
-  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 32px;
 }
-.file-label {
-  background: #ecebff;
-  color: #4a3aff;
-  border: none;
-  border-radius: 12px;
-  padding: 1.1rem 2.2rem;
-  font-size: 1.15rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s;
-  box-shadow: 0 1px 4px rgba(80,80,160,0.07);
-  display: inline-block;
-  min-width: 180px;
-  text-align: center;
-}
-.file-label:hover {
-  background: #d6d3ff;
-}
-.selected-file-name {
-  color: #4a3aff;
-  font-size: 1.08rem;
-  min-width: 180px;
-  margin: 0.7rem 0 0.7rem 0;
-  display: block;
-}
-.import-btn {
-  background: #e0e0e0;
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 1.1rem 2.2rem;
-  font-size: 1.15rem;
-  font-weight: bold;
-  min-width: 180px;
-  box-shadow: 0 1px 4px rgba(80,80,160,0.07);
-  margin: 0 0 1.2rem 0;
-  text-align: center;
-  border: 2px solid transparent;
-  transition: background 0.2s, border 0.2s;
-  display: block;
-}
-.import-btn:not([disabled]) {
-  background: linear-gradient(90deg, #a9a6f9 60%, #4a3aff 100%);
-  cursor: pointer;
-  border: 2px solid #4a3aff;
-}
-.import-btn[disabled] {
-  background: #e0e0e0;
-  color: #fff;
-  cursor: not-allowed;
-  border: 2px solid #e0e0e0;
-}
-.sample-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-  margin-top: 1.2rem;
-}
-.sample-info button {
-  background: linear-gradient(90deg, #a9a6f9 60%, #4a3aff 100%);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 1.1rem 2.2rem;
-  font-size: 1.15rem;
-  font-weight: bold;
-  min-width: 320px;
-  box-shadow: 0 1px 4px rgba(80,80,160,0.07);
-  text-align: center;
-  margin: 0 auto;
-  transition: background 0.2s;
-}
-.sample-info button:hover {
-  background: linear-gradient(90deg, #7d7be6 60%, #4a3aff 100%);
-}
-.import-message {
-  color: #4a3aff;
-  font-size: 1.05rem;
-  margin-top: 1.2rem;
-  display: block;
-  text-align: left;
-}
-
 .import-csv-section.modern {
-  background: #f8f9ff;
-  border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(80, 80, 160, 0.13);
-  padding: 2.5rem 2rem 2rem 2rem;
-  max-width: 480px;
-  margin: 2.5rem auto;
-  text-align: center;
+  background: #f7fbff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+  padding: 32px 24px 24px 24px;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
 }
 .import-csv-bar.modern {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 1.2rem;
-  margin-bottom: 1.2rem;
+  gap: 18px;
+  margin-bottom: 18px;
 }
-.file-label.modern {
-  background: linear-gradient(90deg, #a9a6f9 60%, #4a3aff 100%);
-  color: #fff;
-  border: none;
-  border-radius: 16px;
-  padding: 1.1rem 2.2rem;
-  font-size: 1.15rem;
+.file-label {
+  display: inline-block;
+  background: #ececff;
+  color: #4a4ae6;
   font-weight: bold;
+  border-radius: 12px;
+  padding: 10px 28px;
+  font-size: 1.05rem;
+  margin-right: 10px;
+  margin-bottom: 8px;
   cursor: pointer;
-  box-shadow: 0 2px 12px rgba(80,80,160,0.13);
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  position: relative;
-  overflow: hidden;
-  transition: box-shadow 0.2s, background 0.2s;
+  border: 2px solid #ececff;
+  transition: background 0.2s, color 0.2s;
 }
-.file-label.modern input[type="file"] {
+.file-label input[type="file"] {
   display: none;
 }
-.file-label.modern:hover {
-  box-shadow: 0 4px 24px rgba(80,80,160,0.18);
-  background: linear-gradient(90deg, #7d7be6 60%, #4a3aff 100%);
-}
-.file-icon {
-  display: flex;
-  align-items: center;
-  margin-right: 0.3em;
-}
-.file-icon svg {
-  width: 1.2em;
-  height: 1.2em;
-  fill: #fff;
+.file-label:hover {
+  background: #d6d6ff;
+  color: #222;
 }
 .selected-file-name.modern {
-  color: #4a3aff;
-  font-size: 1.08rem;
-  min-width: 180px;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.selected-file-name.modern svg {
-  width: 1.2em;
-  height: 1.2em;
-  fill: #4a3aff;
+  font-size: 1em;
+  color: #444;
+  margin-right: 10px;
 }
 .import-btn.modern {
-  background: linear-gradient(90deg, #4a3aff 60%, #7d7be6 100%);
+  background: linear-gradient(90deg, #a8a8ff 0%, #4a4ae6 100%);
   color: #fff;
-  border: none;
-  border-radius: 16px;
-  padding: 1.1rem 2.2rem;
-  font-size: 1.18rem;
   font-weight: bold;
-  min-width: 220px;
-  margin: 1.2rem 0 0.7rem 0;
-  box-shadow: 0 2px 12px rgba(80,80,160,0.13);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.7rem;
-  transition: box-shadow 0.2s, background 0.2s, transform 0.1s;
-}
-.import-btn.modern:hover:enabled {
-  background: linear-gradient(90deg, #7d7be6 60%, #4a3aff 100%);
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 6px 24px rgba(80,80,160,0.18);
+  border: none;
+  border-radius: 12px;
+  padding: 10px 28px;
+  font-size: 1.05rem;
+  margin-right: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: filter 0.2s;
+  box-shadow: 0 2px 8px rgba(80,80,160,0.08);
 }
 .import-btn.modern:disabled {
-  background: #e0e0e0;
+  background: #ccc;
   color: #fff;
   cursor: not-allowed;
-  box-shadow: none;
+}
+.import-btn.modern:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+.import-message.modern {
+  margin-left: 18px;
+  color: #4a4ae6;
+  font-weight: bold;
 }
 .sample-info.modern {
+  margin-top: 18px;
   display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-  margin-top: 1.2rem;
+  flex-direction: row;
+  gap: 24px;
+  flex-wrap: nowrap;
 }
 .sample-info.modern button {
-  background: linear-gradient(90deg, #a9a6f9 60%, #4a3aff 100%);
+  background: linear-gradient(90deg, #a8a8ff 0%, #4a4ae6 100%);
   color: #fff;
-  border: none;
-  border-radius: 16px;
-  padding: 1.1rem 2.2rem;
-  font-size: 1.12rem;
   font-weight: bold;
-  min-width: 320px;
-  box-shadow: 0 1px 8px rgba(80,80,160,0.10);
-  text-align: center;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  transition: background 0.2s;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 28px;
+  font-size: 1.05rem;
+  margin-right: 0;
+  margin-bottom: 0;
+  cursor: pointer;
+  transition: filter 0.2s;
+  box-shadow: 0 2px 8px rgba(80,80,160,0.08);
+  white-space: nowrap;
+  min-width: 220px;
+  flex: 0 0 auto;
 }
 .sample-info.modern button:hover {
-  background: linear-gradient(90deg, #7d7be6 60%, #4a3aff 100%);
+  filter: brightness(0.95);
 }
 
 .main-title {
@@ -548,8 +449,7 @@ h2 {
 .form-group {
   display: flex;
   flex-direction: column;
-  min-width: 210px;
-  flex: 1 1 220px;
+  flex: 1 1 0;
   margin-bottom: 0.5rem;
 }
 .form-group label {
@@ -643,28 +543,6 @@ h2 {
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-.diff-row {
-  background: #fffbe6;
-}
-.diff-row:hover {
-  background: #ffe082;
-}
-
-.diff-cell {
-  background: #ffe082 !important;
-}
-
-.diff-value {
-  color: #d32f2f;
-  font-weight: bold;
-}
-
-.form-group:has(button) {
-  flex-direction: row;
-  align-items: flex-end;
-  gap: 8px;
-}
-
 .search-btn {
   padding: 8px 22px;
   background: #4a90e2;
@@ -679,4 +557,27 @@ h2 {
 }
 .search-btn:hover {
   background: #357abd;
+}
+
+.bonus-warning {
+  background: #fff8e1;
+  color: #d32f2f;
+  border: 1px solid #ffe0b2;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-top: 8px;
+  font-size: 1.08em;
+  font-weight: 700;
+  line-height: 1.7;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.active-page {
+  background: #1976d2 !important;
+  color: #fff !important;
+  font-weight: bold;
+  border: 1px solid #1976d2 !important;
 } 

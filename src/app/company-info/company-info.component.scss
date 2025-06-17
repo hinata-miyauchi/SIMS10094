@@ -375,4 +375,50 @@ h2, h3 {
   font-weight: bold;
   margin-bottom: 16px;
   text-align: center;
+}
+
+.tooltip-icon {
+  display: inline-block;
+  margin-left: 6px;
+  color: #1976d2;
+  background: #e3f0fc;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  text-align: center;
+  line-height: 18px;
+  font-size: 13px;
+  cursor: pointer;
+  position: relative;
+}
+.tooltip-icon:focus .tooltip-text,
+.tooltip-icon:hover .tooltip-text {
+  display: block;
+}
+.tooltip-text {
+  display: none;
+  position: absolute;
+  left: 120%;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1976d2;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.bonus-warning {
+  background: #fff8e1;
+  color: #d32f2f;
+  border: 1px solid #ffe0b2;
+  border-radius: 6px;
+  padding: 10px 16px;
+  margin-top: 8px;
+  font-size: 1em;
+  font-weight: 600;
+  line-height: 1.7;
 } 
