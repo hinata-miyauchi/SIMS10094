@@ -20,10 +20,16 @@ export class InsuranceRateListComponent implements OnInit {
   searchPrefecture: string = '';
   pendingSearchYear: string = '';
   pendingSearchPrefecture: string = '';
+  loading: boolean = false;
+  pagedRates: any[] = [];
+  currentPage: number = 1;
+  pageSize: number = 25;
+  totalPages: number = 1;
 
   constructor(private firestore: Firestore) {}
 
   async ngOnInit() {
+    this.loading = true;
     const db = this.firestore;
     const snapshot = await getDocs(collection(db, 'insuranceRates'));
     this.insuranceRates = snapshot.docs.map(doc => doc.data());
@@ -52,6 +58,7 @@ export class InsuranceRateListComponent implements OnInit {
     ];
     this.prefectures = jpPrefList.filter(p => this.insuranceRates.some(r => r.prefecture_name === p));
     this.filterRates();
+    this.loading = false;
   }
 
   filterRates() {
@@ -65,6 +72,29 @@ export class InsuranceRateListComponent implements OnInit {
       // 年度が同じ場合は都道府県コードの昇順
       return String(a.jis_prefecture_code).localeCompare(String(b.jis_prefecture_code), 'ja', {numeric: true});
     });
+    this.currentPage = 1;
+    this.updatePagedRates();
+  }
+
+  updatePagedRates() {
+    this.totalPages = Math.max(1, Math.ceil(this.filteredRates.length / this.pageSize));
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.pagedRates = this.filteredRates.slice(start, end);
+  }
+
+  goToPage(page: number) {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.updatePagedRates();
+  }
+
+  nextPage() {
+    this.goToPage(this.currentPage + 1);
+  }
+
+  prevPage() {
+    this.goToPage(this.currentPage - 1);
   }
 
   onSearch() {

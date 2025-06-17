@@ -4,6 +4,7 @@ import { RouterLink, Router } from '@angular/router';
 import { Firestore, collection, getDocs, DocumentData, query, where } from '@angular/fire/firestore';
 import { FormsModule } from '@angular/forms';
 import { Auth } from '@angular/fire/auth';
+import { calculateSocialInsuranceStatus } from '../social-insurance-status/social-insurance-status.component';
 
 interface Employee {
   id?: string;
@@ -30,6 +31,7 @@ interface Employee {
   manualHealthInsurance?: boolean;
   manualNursingCareInsurance?: boolean;
   manualPension?: boolean;
+  remarks?: string;
 }
 
 interface Grade {
@@ -123,15 +125,31 @@ export class EmployeePremiumCalcComponent implements OnInit {
     // 等級マスタ（uidで絞り込まない）
     const gradeSnap = await getDocs(collection(this.firestore, 'grades'));
     this.grades = gradeSnap.docs.map(doc => doc.data() as Grade);
-    // 保険料率マスタ（uidで絞り込まない）
-    const rateSnap = await getDocs(collection(this.firestore, 'insuranceRates'));
-    this.rates = rateSnap.docs.map(doc => doc.data() as Rate);
     // 会社情報（uidで絞り込む）
     const companySnap = await getDocs(query(collection(this.firestore, 'company'), where('uid', '==', uid)));
     const companyDoc = companySnap.docs[0];
+    let prefectureList: string[] = [];
     if (companyDoc) {
       const companyData = companyDoc.data();
       this.officesForm = companyData['officesForm'] || [];
+      // 事業所で使われている都道府県名リストを作成
+      prefectureList = this.officesForm.map((o: any) => o.prefecture).filter((v: string | undefined) => !!v);
+      // 重複除去
+      prefectureList = Array.from(new Set(prefectureList));
+    }
+    // 保険料率マスタ（事業所都道府県のみ取得）
+    this.rates = [];
+    if (prefectureList.length > 0) {
+      // Firestoreのinクエリは10件までなので分割
+      for (let i = 0; i < prefectureList.length; i += 10) {
+        const chunk = prefectureList.slice(i, i + 10);
+        const rateSnap = await getDocs(query(collection(this.firestore, 'insuranceRates'), where('prefecture_name', 'in', chunk)));
+        this.rates.push(...rateSnap.docs.map(doc => doc.data() as Rate));
+      }
+    } else {
+      // 事業所都道府県が取得できない場合は全件取得（従来通り）
+      const rateSnap = await getDocs(collection(this.firestore, 'insuranceRates'));
+      this.rates = rateSnap.docs.map(doc => doc.data() as Rate);
     }
     // 初期表示時に自動検索
     await this.searchEmployeesByNo();
@@ -156,11 +174,12 @@ export class EmployeePremiumCalcComponent implements OnInit {
 
     const uid = this.auth.currentUser?.uid;
     if (!uid) { this.loading = false; return; }
-    // 社員番号未入力で給与計算年月のみ指定時
+    // 社員番号未入力かつ給与計算年月が指定されている場合
     if (!this.searchEmployeeNo && this.selectedSalaryMonth) {
       const salarySnap = await getDocs(query(collection(this.firestore, 'salaries'), where('uid', '==', uid)));
-      const matchedSalaries = salarySnap.docs.filter(doc => doc.id.endsWith(`_${this.selectedSalaryMonth}`));
-      const employeeNos = matchedSalaries.map(doc => doc.id.split('_')[0]);
+      // 今月分の給与データがある従業員番号リストを抽出
+      const matchedSalaries = salarySnap.docs.filter(doc => doc.data()['salary_date'] === this.selectedSalaryMonth);
+      const employeeNos = matchedSalaries.map(doc => doc.data()['employee_no']);
       if (employeeNos.length === 0) {
         this.noEmployeeFound = true;
         this.loading = false;
@@ -168,6 +187,7 @@ export class EmployeePremiumCalcComponent implements OnInit {
       }
       // 社員情報をまとめて取得
       const employeesSnap = await getDocs(query(collection(this.firestore, 'employees'), where('uid', '==', uid)));
+      // 今月分の給与データがある従業員のみ抽出
       this.employees = employeesSnap.docs
         .map(doc => {
           const data = doc.data() as any;
@@ -198,7 +218,17 @@ export class EmployeePremiumCalcComponent implements OnInit {
             manualPension: data.manualPension ?? data.pension ?? false
           } as Employee;
         })
-        .filter(e => employeeNos.includes(e.employee_no));
+        // 今月分の給与データがある従業員のみフィルタ
+        .filter(e => employeeNos.includes(e.employee_no))
+        // 社会保険フラグが全てfalseの人は除外
+        .filter(e => e.healthInsurance || e.nursingCareInsurance || e.pension)
+        // 従業員番号の昇順でソート
+        .sort((a, b) => {
+          const aNo = Number(a.employee_no);
+          const bNo = Number(b.employee_no);
+          if (!isNaN(aNo) && !isNaN(bNo)) return aNo - bNo;
+          return String(a.employee_no).localeCompare(String(b.employee_no), 'ja');
+        });
       // 保険料計算キャッシュ
       this.premiumMap = {};
       for (const e of this.employees) {
@@ -242,39 +272,42 @@ export class EmployeePremiumCalcComponent implements OnInit {
       where('uid', '==', uid)
     );
     const snap = await getDocs(q);
-    this.employees = snap.docs.map(doc => {
-      const data = doc.data() as any;
-      const baseSalary = Number(data.salary?.base_salary ?? 0);
-      const commutingAllowance = Number(data.salary?.commuting_allowance ?? 0);
-      const totalSalary = baseSalary + commutingAllowance;
-      const bonus = Number(data.salary?.bonus ?? 0);
-      return {
-        id: doc.id,
-        full_name: data.full_name ?? '',
-        employee_no: data.employee_no ?? '',
-        salary: totalSalary,
-        bonus: bonus,
-        department: data.department ?? '',
-        office: data.office ?? '',
-        birth: data.birth_date ?? '',
-        gender: data.gender ?? '',
-        address: data.address ?? '',
-        myNumber: data.employee_no ?? '',
-        employmentType: data.employmentType ?? '',
-        joinDate: data.joinDate ?? '',
-        leaveDate: data.leaveDate ?? '',
-        healthInsurance: data.healthInsurance ?? false,
-        nursingCareInsurance: data.nursingCareInsurance ?? false,
-        pension: data.pension ?? false,
-        manualInsuranceEdit: data.manualInsuranceEdit ?? false,
-        autoHealthInsurance: data.autoHealthInsurance ?? data.healthInsurance ?? false,
-        autoNursingCareInsurance: data.autoNursingCareInsurance ?? data.nursingCareInsurance ?? false,
-        autoPension: data.autoPension ?? data.pension ?? false,
-        manualHealthInsurance: data.manualHealthInsurance ?? data.healthInsurance ?? false,
-        manualNursingCareInsurance: data.manualNursingCareInsurance ?? data.nursingCareInsurance ?? false,
-        manualPension: data.manualPension ?? data.pension ?? false
-      } as Employee;
-    });
+    this.employees = snap.docs
+      .map(doc => {
+        const data = doc.data() as any;
+        const baseSalary = Number(data.salary?.base_salary ?? 0);
+        const commutingAllowance = Number(data.salary?.commuting_allowance ?? 0);
+        const totalSalary = baseSalary + commutingAllowance;
+        const bonus = Number(data.salary?.bonus ?? 0);
+        return {
+          id: doc.id,
+          full_name: data.full_name ?? '',
+          employee_no: data.employee_no ?? '',
+          salary: totalSalary,
+          bonus: bonus,
+          department: data.department ?? '',
+          office: data.office ?? '',
+          birth: data.birth_date ?? '',
+          gender: data.gender ?? '',
+          address: data.address ?? '',
+          myNumber: data.employee_no ?? '',
+          employmentType: data.employmentType ?? '',
+          joinDate: data.joinDate ?? '',
+          leaveDate: data.leaveDate ?? '',
+          healthInsurance: data.healthInsurance ?? false,
+          nursingCareInsurance: data.nursingCareInsurance ?? false,
+          pension: data.pension ?? false,
+          manualInsuranceEdit: data.manualInsuranceEdit ?? false,
+          autoHealthInsurance: data.autoHealthInsurance ?? data.healthInsurance ?? false,
+          autoNursingCareInsurance: data.autoNursingCareInsurance ?? data.nursingCareInsurance ?? false,
+          autoPension: data.autoPension ?? data.pension ?? false,
+          manualHealthInsurance: data.manualHealthInsurance ?? data.healthInsurance ?? false,
+          manualNursingCareInsurance: data.manualNursingCareInsurance ?? data.nursingCareInsurance ?? false,
+          manualPension: data.manualPension ?? data.pension ?? false
+        } as Employee;
+      })
+      // 社会保険フラグが全てfalseの人は除外
+      .filter(e => e.healthInsurance || e.nursingCareInsurance || e.pension);
     // 保険料計算を事前に実行しキャッシュ
     this.premiumMap = {};
     let allNoSalary = true;
@@ -282,11 +315,13 @@ export class EmployeePremiumCalcComponent implements OnInit {
       let bonus = 0;
       if (e.employee_no && this.selectedSalaryMonth) {
         try {
+          const uid = this.auth.currentUser?.uid;
           const salarySnap = await getDocs(
             query(
               collection(this.firestore, 'salaries'),
               where('employee_no', '==', e.employee_no),
-              where('salary_date', '==', this.selectedSalaryMonth)
+              where('salary_date', '==', this.selectedSalaryMonth),
+              where('uid', '==', uid)
             )
           );
           if (!salarySnap.empty) {
@@ -300,9 +335,13 @@ export class EmployeePremiumCalcComponent implements OnInit {
       e.bonus = bonus;
       this.premiumMap[e.employee_no] = await this.calcPremium(e);
       // 給与情報の有無を判定
-      const salaryDocId = `${e.employee_no}_${this.selectedSalaryMonth}`;
       const salarySnap = await getDocs(
-        query(collection(this.firestore, 'salaries'), where('__name__', '==', salaryDocId))
+        query(
+          collection(this.firestore, 'salaries'),
+          where('employee_no', '==', e.employee_no),
+          where('salary_date', '==', this.selectedSalaryMonth),
+          where('uid', '==', uid)
+        )
       );
       if (!salarySnap.empty) {
         allNoSalary = false;
@@ -323,6 +362,23 @@ export class EmployeePremiumCalcComponent implements OnInit {
 
   // 従業員ごとの計算結果を返す
   async calcPremium(e: Employee) {
+    // 会社情報取得
+    const uid = this.auth.currentUser?.uid;
+    let companyData = {};
+    if (uid) {
+      const companySnap = await getDocs(query(collection(this.firestore, 'company'), where('uid', '==', uid)));
+      if (!companySnap.empty) {
+        companyData = companySnap.docs[0].data();
+      }
+    }
+    // 社会保険自動判定
+    if (!e.manualInsuranceEdit) {
+      const result = calculateSocialInsuranceStatus(e, companyData);
+      e.healthInsurance = result.healthInsurance;
+      e.nursingCareInsurance = result.nursingCareInsurance;
+      e.pension = result.pension;
+      e.remarks = result.remarks;
+    }
     let isManual = false;
     let message = '';
     let careError = '';
@@ -357,21 +413,19 @@ export class EmployeePremiumCalcComponent implements OnInit {
         message
       };
     }
-    console.log('grades:', this.grades);
-    console.log('rates:', this.rates);
-    console.log('year:', this.year, 'prefecture:', this.prefecture);
-    console.log('employee:', e);
     // 給与取得（salariesコレクションから）
     let salary = 0;
     let bonus = 0;
     let bonusMonth = '';
     if (e.employee_no && this.selectedSalaryMonth) {
       try {
+        const uid = this.auth.currentUser?.uid;
         const salarySnap = await getDocs(
           query(
             collection(this.firestore, 'salaries'),
             where('employee_no', '==', e.employee_no),
-            where('salary_date', '==', this.selectedSalaryMonth)
+            where('salary_date', '==', this.selectedSalaryMonth),
+            where('uid', '==', uid)
           )
         );
         if (!salarySnap.empty) {
@@ -453,19 +507,16 @@ export class EmployeePremiumCalcComponent implements OnInit {
     }
     if (premiumMonth) {
       const salaryYMD = toYMD(premiumMonth);
-      console.log('salaryMonthDate:', salaryYMD);
       this.rates.forEach(r => {
         const start = toYMD(new Date(r.effective_start_date));
         const end = toYMD(new Date(r.effective_end_date));
-        console.log(
-          '都道府県:', r.prefecture_name,
-          'start:', start,
-          'end:', end,
-          'salaryMonthDate:', salaryYMD,
-          'start<=salaryMonthDate:', start.getTime() <= salaryYMD.getTime(),
-          'salaryMonthDate<=end:', salaryYMD.getTime() <= end.getTime(),
-          '都道府県一致:', r.prefecture_name === this.prefecture
-        );
+        if (
+          r.prefecture_name === this.prefecture &&
+          salaryYMD.getTime() >= start.getTime() &&
+          salaryYMD.getTime() <= end.getTime()
+        ) {
+          // 都道府県一致
+        }
       });
     }
     // 事業所の都道府県を取得
@@ -545,15 +596,6 @@ export class EmployeePremiumCalcComponent implements OnInit {
     // 差分フラグ
     let healthCompanyDiff = false, healthPersonalDiff = false, careCompanyDiff = false, carePersonalDiff = false, pensionCompanyDiff = false, pensionPersonalDiff = false;
     if ((e as any).manualInsuranceEdit) {
-      console.log(
-        'employee_no:', e.employee_no,
-        'autoHealth:', autoHealth,
-        'autoCare:', autoCare,
-        'autoPension:', autoPension,
-        'manualHealth:', manualHealth,
-        'manualCare:', manualCare,
-        'manualPension:', manualPension
-      );
       // 自動判定値での保険料も計算
       const autoHealthCompany = (autoHealth && rate) ? Math.round((safeNumber(standard) * safeNumber(rate.health_insurance_rate_employer) / 100) * 10) / 10 : 0;
       const autoHealthPersonal = (autoHealth && rate) ? Math.round((safeNumber(standard) * safeNumber(rate.health_insurance_rate_employee) / 100) * 10) / 10 : 0;
@@ -595,6 +637,10 @@ export class EmployeePremiumCalcComponent implements OnInit {
       carePersonal: safeNumber(carePersonal),
       pensionCompany: safeNumber(pensionCompany),
       pensionPersonal: safeNumber(pensionPersonal),
+      healthTotal: safeNumber(healthCompany) + safeNumber(healthPersonal),
+      careTotal: safeNumber(careCompany) + safeNumber(carePersonal),
+      pensionTotal: safeNumber(pensionCompany) + safeNumber(pensionPersonal),
+      bonus: safeNumber(bonus),
       careError,
       salary: safeNumber(salary),
       healthCompanyDiff,
@@ -604,7 +650,6 @@ export class EmployeePremiumCalcComponent implements OnInit {
       pensionCompanyDiff,
       pensionPersonalDiff
     };
-    console.log('premium:', e.employee_no, premium);
     return premium;
   }
 
@@ -613,6 +658,15 @@ export class EmployeePremiumCalcComponent implements OnInit {
   }
 
   onSearch() {
+    // 年または月が空欄ならエラー表示
+    if (!this.pendingSalaryYear || !this.pendingSalaryMonthOnly) {
+      this.salaryNotFoundMessage = '給与計算年および給与計算月を入力してください';
+      this.employees = [];
+      this.premiumMap = {};
+      return;
+    }
+    this.salaryNotFoundMessage = '';
+    // 既存の検索処理を呼ぶ
     this.selectedSalaryYear = this.pendingSalaryYear;
     this.selectedSalaryMonthOnly = this.pendingSalaryMonthOnly;
     this.updateSalaryMonth();
@@ -620,13 +674,11 @@ export class EmployeePremiumCalcComponent implements OnInit {
   }
 
   onClearSearch() {
-    const now = new Date();
     this.searchEmployeeNo = '';
-    this.pendingSalaryYear = now.getFullYear().toString();
-    this.pendingSalaryMonthOnly = ('0' + (now.getMonth() + 1)).slice(-2);
-    this.selectedSalaryYear = this.pendingSalaryYear;
-    this.selectedSalaryMonthOnly = this.pendingSalaryMonthOnly;
-    this.updateSalaryMonth();
-    this.onSearch();
+    this.pendingSalaryYear = '';
+    this.pendingSalaryMonthOnly = '';
+    this.salaryNotFoundMessage = '';
+    this.employees = [];
+    this.premiumMap = {};
   }
 } 

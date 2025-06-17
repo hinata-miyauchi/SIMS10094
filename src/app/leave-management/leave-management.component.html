@@ -3,6 +3,21 @@
     <button class="home-btn" routerLink="/">ホームへ戻る</button>
   </div>
   <h1 class="main-title">休職情報管理</h1>
+  <form class="search-form" (submit)="$event.preventDefault()">
+    <div class="form-fields">
+      <div class="form-group">
+        <label for="searchEmployeeNo">従業員番号</label>
+        <input id="searchEmployeeNo" [(ngModel)]="searchEmployeeNo" name="searchEmployeeNo" type="text" placeholder="従業員番号で検索" autocomplete="off" />
+      </div>
+      <div class="form-group" style="align-self: flex-end; min-width: 120px; display: flex; gap: 8px;">
+        <button class="search-btn" type="button" (click)="onSearch()">検索</button>
+        <button class="search-btn" type="button" (click)="onClearSearch()">クリア</button>
+      </div>
+      <div style="flex: 1; display: flex; align-items: flex-end; justify-content: flex-end; margin-bottom: 1.5rem;">
+        <span style="color: #1976d2; font-weight: bold; font-size: 1em; white-space: nowrap;">※行をクリックすると、休業情報の修正・更新を行うことができます。</span>
+      </div>
+    </div>
+  </form>
   <div class="leave-table-wrapper">
     <table class="leave-table">
       <thead>
@@ -15,12 +30,15 @@
         </tr>
       </thead>
       <tbody>
-        <ng-container *ngIf="leaveList.length > 0; else noData">
-          <tr *ngFor="let leave of leaveList">
+        <ng-container *ngIf="filteredLeaveList.length > 0; else noData">
+          <tr *ngFor="let leave of filteredLeaveList"
+            [ngClass]="{'diff-row': leave.isOutOfRange}"
+            [attr.title]="leave.isOutOfRange ? '開始日と終了日の範囲外です。期間を修正するか、在籍状況を更新してください。' : null"
+            (click)="onEditRow(leave)" style="cursor:pointer;">
             <td>{{ leave.employee_no }}</td>
             <td>{{ leave.full_name }}</td>
-            <td>{{ leave.leave_start }}</td>
-            <td>{{ leave.leave_end }}</td>
+            <td [ngClass]="{'diff-text': leave.isOutOfRange}">{{ leave.leave_start }}</td>
+            <td [ngClass]="{'diff-text': leave.isOutOfRange}">{{ leave.leave_end }}</td>
             <td>{{ leave.leave_reason }}</td>
           </tr>
         </ng-container>
@@ -32,4 +50,71 @@
       </tr>
     </ng-template>
   </div>
-</div> 
+</div>
+
+<div *ngIf="loading" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255,255,255,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+  <span style="font-size: 2rem; color: #1976d2; font-weight: bold;">読み込み中…</span>
+</div>
+
+<app-leave-management-edit-modal
+  *ngIf="editModalOpen && editTarget"
+  [employeeNo]="editTarget.employee_no"
+  [fullName]="editTarget.full_name"
+  [status]="editTarget.status"
+  [leaveReason]="editTarget.leave_reason"
+  [leaveStart]="editTarget.leave_start"
+  [leaveEnd]="editTarget.leave_end"
+  [retirementDate]="editTarget.retirement_date"
+  (save)="onEditSave($event)"
+  (cancel)="onEditCancel()"
+></app-leave-management-edit-modal>
+
+<style>
+  .tooltip-icon {
+    display: inline-block;
+    position: relative;
+    color: #1976d2;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 1.2em;
+    height: 1.2em;
+    text-align: center;
+    line-height: 1.2em;
+    background: #e3f2fd;
+    font-size: 0.95em;
+    cursor: pointer;
+    margin-bottom: 2px;
+  }
+  .tooltip-icon:focus .tooltip-text,
+  .tooltip-icon:hover .tooltip-text {
+    display: block;
+  }
+  .tooltip-text {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: 120%;
+    transform: translateX(-50%);
+    background: #fff;
+    color: #333;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 0.95em;
+    white-space: nowrap;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .tooltip-qmark-orange {
+    color: #ff9800;
+    font-weight: bold;
+    font-size: 1em;
+  }
+  .diff-row {
+    background: #ffeaea !important;
+  }
+  .diff-text {
+    color: #e53935 !important;
+    font-weight: bold;
+  }
+</style> 

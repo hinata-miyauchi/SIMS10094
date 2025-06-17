@@ -211,4 +211,14 @@
   flex-direction: row;
   align-items: flex-end;
   gap: 8px;
+}
+.diff-row {
+  background: #fff3f3 !important;
+}
+.diff-text {
+  color: #d32f2f !important;
+  font-weight: bold;
+}
+.grade-table tbody tr.diff-row:hover {
+  background: #ffeaea !important;
 } 

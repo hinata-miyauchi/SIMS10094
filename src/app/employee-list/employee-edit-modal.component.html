@@ -21,7 +21,7 @@
           <div class="form-group"><label>性別 <span class="required">*</span></label><select [(ngModel)]="employee.gender" name="gender" autocomplete="off"><option value="男">男</option><option value="女">女</option><option value="その他">その他</option></select></div>
           <div class="form-group"><label>マイナンバー（変更不可） <span class="required">*</span></label><input type="text" [(ngModel)]="employee.my_number" name="my_number" pattern="[0-9]*" inputmode="numeric" autocomplete="off" readonly /></div>
           <div class="form-group"><label>国籍 <span class="required">*</span></label><select [(ngModel)]="employee.nationality" name="nationality" autocomplete="off"><option value="日本">日本</option><option value="日本以外">日本以外</option></select></div>
-          <div class="form-group"><label>扶養者の有無 <span class="required">*</span></label><select [(ngModel)]="employee.has_dependents" name="has_dependents" autocomplete="off"><option value="あり">あり</option><option value="なし">なし</option><option value="被扶養者本人">被扶養者本人</option></select></div>
+          <div class="form-group"><label>扶養者の有無 <span class="required">*</span></label><select [(ngModel)]="employee.has_dependents" name="has_dependents" autocomplete="off"><option value="あり">あり</option><option value="なし">なし</option><option value="被扶養者本人">被扶養者本人</option></select><div *ngIf="employee.has_dependents === '被扶養者本人'" class="dependent-warning">年間収入が130万円未満（60歳以上または障害者は180万円未満）<br>かつ、被保険者の収入の1/2未満であることを確認して登録（修正）してください</div></div>
           <div class="form-group"><label>障がいの有無 <span class="required">*</span></label><select [(ngModel)]="employee.has_disability" name="has_disability" autocomplete="off"><option value="true">あり</option><option value="false">なし</option></select></div>
           <div class="form-group"><label>海外勤務の有無 <span class="required">*</span></label><select [(ngModel)]="employee.has_overseas" name="has_overseas" autocomplete="off"><option value="true">あり</option><option value="false">なし</option></select></div>
           <div class="form-group" *ngIf="employee.has_overseas === 'true'">
@@ -45,6 +45,13 @@
             <select [(ngModel)]="employee.is_social_security_agreement" name="is_social_security_agreement" autocomplete="off">
               <option value="はい">はい</option>
               <option value="いいえ">いいえ</option>
+            </select>
+          </div>
+          <div class="form-group" *ngIf="employee.has_overseas === 'true' && employee.overseas_employment_type === '日本法人雇用' && employee.is_social_security_agreement === 'はい'">
+            <label>赴任予定期間 <span class="required">*</span></label>
+            <select [(ngModel)]="employee.assignment_period" name="assignment_period" autocomplete="off">
+              <option value="5年以内">5年以内</option>
+              <option value="5年超">5年超</option>
             </select>
           </div>
           <div class="form-group" *ngIf="employee.has_overseas === 'true'">
@@ -95,7 +102,6 @@
           <div class="form-group" *ngIf="employee.employment_type === 'パート・アルバイト' || employee.employment_type === '有給インターン'">
             <label>区分</label>
             <select [(ngModel)]="employee.employment_type_detail" name="employment_type_detail">
-              <option value="">選択してください</option>
               <option *ngFor="let d of employmentTypeDetail" [value]="d">{{d}}</option>
             </select>
           </div>
@@ -109,8 +115,10 @@
             </label>
             <input type="number" [(ngModel)]="employee.scheduled_working_days" name="scheduled_working_days" min="0" step="1" autocomplete="off" required />
           </div>
-          <div class="form-group"><label>見込み固定的賃金（円） <span class="required">*</span><span class="tooltip-icon" tabindex="0">？
+          <div class="form-group"><label>標準報酬月額（見込み固定賃金） <span class="required">*</span><span class="tooltip-icon" tabindex="0">？
             <span class="tooltip-text">
+              定時改定や随時改定の際は、改定後の金額を入力してください。<br>
+              新入社員の場合は、見込み固定賃金を入力してください。<br>
               基本給、通勤手当（毎月一定額支給の場合）、住宅手当、<br>
               役職手当などの基本毎月変動しない手当の合計
             </span></span></label><input type="number" [(ngModel)]="employee.expected_monthly_income" name="expected_monthly_income" min="0" step="1" autocomplete="off" required /></div>
@@ -124,14 +132,15 @@
       </form>
       <form class="company-form" *ngIf="subTabIndex === 4">
         <div class="form-fields">
-          <div class="insurance-flex-row">
-            <div class="form-group" style="flex:1;"><label>健康保険被保険者番号</label><input type="text" [(ngModel)]="employee.health_insurance_no" name="health_insurance_no" pattern="[A-Za-z0-9\-]*" inputmode="text" autocomplete="off" /></div>
-            <div class="form-group" style="flex:1;"><label>厚生年金被保険者番号</label><input type="text" [(ngModel)]="employee.pension_insurance_no" name="pension_insurance_no" pattern="[A-Za-z0-9\-]*" inputmode="text" autocomplete="off" /></div>
-            <div class="form-group" style="flex:1;"><label>基礎年金番号</label><input type="text" [(ngModel)]="employee.basic_pension_no" name="basic_pension_no" pattern="[A-Za-z0-9\-]*" inputmode="text" autocomplete="off" /></div>
+          <div class="insurance-flex-row" style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
+            <div class="form-group" style="flex:1; min-width: 220px; max-width: 100%;"><label>健康保険被保険者番号</label><input type="text" [(ngModel)]="employee.health_insurance_no" name="health_insurance_no" pattern="[A-Za-z0-9\-]*" inputmode="text" autocomplete="off" /></div>
+            <div class="form-group" style="flex:1; min-width: 220px; max-width: 100%;"><label>健康保険資格取得日</label><input type="date" [(ngModel)]="employee.health_insurance_acquisition_date" name="health_insurance_acquisition_date" autocomplete="off" /></div>
+            <div class="form-group" style="flex:1; min-width: 220px; max-width: 100%;"><label>健康保険資格喪失日</label><input type="date" [(ngModel)]="employee.health_insurance_loss_date" name="health_insurance_loss_date" autocomplete="off" /></div>
           </div>
-          <div class="insurance-flex-row">
-            <div class="form-group" style="flex:1;"><label>資格取得日</label><input type="date" [(ngModel)]="employee.qualification_acquisition_date" name="qualification_acquisition_date" autocomplete="off" /></div>
-            <div class="form-group" style="flex:1;"><label>資格喪失日</label><input type="date" [(ngModel)]="employee.qualification_loss_date" name="qualification_loss_date" autocomplete="off" /></div>
+          <div class="insurance-flex-row" style="display: flex; flex-wrap: wrap; gap: 12px;">
+            <div class="form-group" style="flex:1; min-width: 220px; max-width: 100%;"><label>基礎年金番号（厚生年金）</label><input type="text" [(ngModel)]="employee.basic_pension_no" name="basic_pension_no" pattern="[A-Za-z0-9\-]*" inputmode="text" autocomplete="off" /></div>
+            <div class="form-group" style="flex:1; min-width: 220px; max-width: 100%;"><label>厚生年金資格取得日</label><input type="date" [(ngModel)]="employee.pension_acquisition_date" name="pension_acquisition_date" autocomplete="off" /></div>
+            <div class="form-group" style="flex:1; min-width: 220px; max-width: 100%;"><label>厚生年金資格喪失日</label><input type="date" [(ngModel)]="employee.pension_loss_date" name="pension_loss_date" autocomplete="off" /></div>
           </div>
         </div>
       </form>

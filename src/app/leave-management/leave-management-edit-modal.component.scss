@@ -1,0 +1,110 @@
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.25);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2.5rem 2.5rem 2rem 2.5rem;
+  min-width: 520px;
+  max-width: 700px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  position: relative;
+}
+.main-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #1976d2;
+  margin-bottom: 1.5rem;
+}
+.form-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem 2.2rem;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  margin-bottom: 0.5rem;
+}
+label {
+  font-weight: bold;
+  color: #222;
+  margin-bottom: 0.3em;
+  font-size: 1em;
+}
+.input {
+  border: 1.5px solid #bfc7d1;
+  border-radius: 7px;
+  padding: 0.5em 0.9em;
+  font-size: 1em;
+  background: #f7f8fa;
+  margin-bottom: 0.1em;
+  outline: none;
+  transition: border 0.2s;
+}
+.input:focus {
+  border: 1.5px solid #1976d2;
+  background: #fff;
+}
+.required {
+  color: #e53935;
+  font-weight: bold;
+  margin-left: 0.2em;
+}
+.error-message {
+  color: #e53935;
+  font-weight: bold;
+  margin-bottom: 1em;
+  margin-top: 0.5em;
+  grid-column: 1 / span 2;
+}
+.modal-actions {
+  display: flex;
+  gap: 1.5em;
+  justify-content: center;
+  margin-top: 1.5em;
+}
+.main-btn {
+  padding: 0.5em 2.2em;
+  border-radius: 4px;
+  border: none;
+  background: #1976d2;
+  color: #fff;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.main-btn:hover {
+  background: #1256a3;
+}
+.cancel-btn {
+  padding: 0.5em 1.5em;
+  border-radius: 4px;
+  border: none;
+  background: #aaa;
+  color: #fff;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cancel-btn:hover {
+  background: #888;
+}
+@media (max-width: 700px) {
+  .modal-content {
+    min-width: 90vw;
+    padding: 1.2rem 0.5rem 1rem 0.5rem;
+  }
+  .form-fields {
+    grid-template-columns: 1fr;
+  }
+} 

@@ -10,14 +10,14 @@
         <input id="searchEmployeeNo" [(ngModel)]="searchEmployeeNo" name="searchEmployeeNo" type="text" placeholder="社員番号で検索" autocomplete="off" />
       </div>
       <div class="form-group">
-        <label>給与計算年</label>
+        <label>保険料計算年</label>
         <select [(ngModel)]="pendingSalaryYear" name="pendingSalaryYear" (change)="updateSalaryMonth()">
           <option value="">--</option>
           <option *ngFor="let y of salaryYearOptions" [value]="y">{{y}}</option>
         </select>
       </div>
       <div class="form-group">
-        <label>給与計算月</label>
+        <label>保険料計算月</label>
         <select [(ngModel)]="pendingSalaryMonthOnly" name="pendingSalaryMonthOnly" (change)="updateSalaryMonth()">
           <option value="">--</option>
           <option *ngFor="let m of salaryMonthOnlyOptions" [value]="m">{{m}}</option>
@@ -27,9 +27,14 @@
         <button class="search-btn" type="button" (click)="onSearch()">検索</button>
         <button class="search-btn" type="button" (click)="onClearSearch()">クリア</button>
       </div>
+      <div style="align-self: flex-end; margin-left: 24px; color: #1976d2; font-size: 1.05em; font-weight: 500; white-space: nowrap;">
+        ※社会保険料が発生する従業員のみ表示します
+      </div>
     </div>
   </form>
-  <div *ngIf="loading">読み込み中...</div>
+  <div *ngIf="loading" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255,255,255,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+    <span style="font-size: 2rem; color: #1976d2; font-weight: bold;">読み込み中…</span>
+  </div>
   <div *ngIf="noEmployeeFound" style="color: #e74c3c; margin-bottom: 8px;">
     対象の従業員はいません
   </div>
@@ -41,13 +46,17 @@
       <tr>
         <th>従業員番号</th>
         <th>氏名</th>
-        <th>報酬（月額）</th>
-        <th>賞与</th>
-        <th>等級</th>
+        <th>等級
+          <span class="tooltip-icon" tabindex="0" style="margin-left:4px;">
+            <span class="tooltip-qmark-orange">？</span>
+            <span class="tooltip-text">健康・介護保険の等級を表示しています。</span>
+          </span>
+        </th>
         <th>標準報酬月額</th>
-        <th>健康保険料<br>（会社/本人）</th>
-        <th>介護保険料<br>（会社/本人）</th>
-        <th>厚生年金保険料<br>（会社/本人）</th>
+        <th>賞与</th>
+        <th>健康保険料<br>（全体 / 会社・本人）<span class="note-mark">※1</span></th>
+        <th>介護保険料<br>（全体 / 会社・本人）<span class="note-mark">※1</span></th>
+        <th>厚生年金保険料<br>（全体 / 会社・本人）<span class="note-mark">※1</span></th>
       </tr>
     </thead>
     <tbody *ngIf="!salaryNotFoundMessage">
@@ -56,27 +65,26 @@
           [attr.title]="e.manualInsuranceEdit ? '社会保険加入状況を手動変更した算出結果です。' : null">
         <td>{{e.employee_no}}</td>
         <td>{{e.full_name}}</td>
-        <td>{{premiumMap[e.employee_no]?.salary | number}}</td>
-        <td>{{e.bonus | number}}</td>
         <td>{{premiumMap[e.employee_no]?.grade}}</td>
         <td>{{premiumMap[e.employee_no]?.standard | number}}</td>
+        <td>{{premiumMap[e.employee_no]?.bonus | number}}</td>
         <td>
           <span [ngClass]="{'manual-value': e.manualInsuranceEdit}">
-            {{premiumMap[e.employee_no]?.healthCompany | number:'1.2-2'}}
+            {{premiumMap[e.employee_no]?.healthTotal | number:'1.2-2'}}
           </span>
           /
           <span [ngClass]="{'manual-value': e.manualInsuranceEdit}">
-            {{premiumMap[e.employee_no]?.healthPersonal | number:'1.2-2'}}
+            {{premiumMap[e.employee_no]?.healthCompany | number:'1.2-2'}}
           </span>
         </td>
         <td>
           <ng-container *ngIf="!premiumMap[e.employee_no]?.careError; else careErrorTpl">
             <span [ngClass]="{'manual-value': e.manualInsuranceEdit}">
-              {{premiumMap[e.employee_no]?.careCompany | number:'1.1-1'}}
+              {{premiumMap[e.employee_no]?.careTotal | number:'1.1-1'}}
             </span>
             /
             <span [ngClass]="{'manual-value': e.manualInsuranceEdit}">
-              {{premiumMap[e.employee_no]?.carePersonal | number:'1.1-1'}}
+              {{premiumMap[e.employee_no]?.careCompany | number:'1.1-1'}}
             </span>
           </ng-container>
           <ng-template #careErrorTpl>
@@ -85,14 +93,80 @@
         </td>
         <td>
           <span [ngClass]="{'manual-value': e.manualInsuranceEdit}">
-            {{premiumMap[e.employee_no]?.pensionCompany | number:'1.2-2'}}
+            {{premiumMap[e.employee_no]?.pensionTotal | number:'1.2-2'}}
           </span>
           /
           <span [ngClass]="{'manual-value': e.manualInsuranceEdit}">
-            {{premiumMap[e.employee_no]?.pensionPersonal | number:'1.2-2'}}
+            {{premiumMap[e.employee_no]?.pensionCompany | number:'1.2-2'}}
           </span>
         </td>
       </tr>
     </tbody>
   </table>
-</div> 
+  <div class="table-notes">
+    <div><span class="note-mark">※1</span> 
+      （1）事業主が給与（賞与）から被保険者負担分を控除する場合<br>
+      控除額の計算において、被保険者負担分の端数が50銭以下の場合は切り捨て、50銭を超える場合は切り上げて1円となります。<br>
+      （2）被保険者が、被保険者負担分を事業主へ現金で支払う場合<br>
+      被保険者が事業主に現金で支払う額の計算において、被保険者負担分の端数が50銭未満の場合は切り捨て、50銭以上の場合は切り上げて1円となります。
+    </div>
+  </div>
+</div>
+
+<style>
+  .tooltip-icon {
+    display: inline-block;
+    position: relative;
+    color: #1976d2;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 1.2em;
+    height: 1.2em;
+    text-align: center;
+    line-height: 1.2em;
+    background: #e3f2fd;
+    font-size: 0.95em;
+    cursor: pointer;
+    margin-bottom: 2px;
+  }
+  .tooltip-icon:focus .tooltip-text,
+  .tooltip-icon:hover .tooltip-text {
+    display: block;
+  }
+  .tooltip-text {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: 120%;
+    transform: translateX(-50%);
+    background: #fff;
+    color: #333;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 0.95em;
+    white-space: nowrap;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  .tooltip-qmark-orange {
+    color: #ff9800;
+    font-weight: bold;
+    font-size: 1em;
+  }
+  .note-mark {
+    color: #1976d2;
+    font-weight: bold;
+    font-size: 0.95em;
+    margin-left: 2px;
+  }
+  .table-notes {
+    margin-top: 1.2rem;
+    color: #444;
+    font-size: 0.98em;
+    background: #f7f8fa;
+    border-radius: 6px;
+    padding: 0.7em 1.2em;
+    max-width: 100%;
+  }
+</style> 

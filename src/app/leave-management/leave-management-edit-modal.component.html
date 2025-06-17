@@ -1,0 +1,48 @@
+<div class="modal-backdrop">
+  <div class="modal-content">
+    <h2 class="main-title">休職情報編集</h2>
+    <form class="form-fields" (submit)="$event.preventDefault()">
+      <div class="form-group">
+        <label>従業員番号</label>
+        <input class="input" type="text" [value]="employeeNo" disabled />
+      </div>
+      <div class="form-group">
+        <label>氏名</label>
+        <input class="input" type="text" [value]="fullName" disabled />
+      </div>
+      <div class="form-group">
+        <label>在籍状況 <span class="required">*</span></label>
+        <select class="input" [(ngModel)]="status" required name="status_{{employeeNo}}">
+          <!-- 先頭の選択肢をデフォルトに -->
+          <option *ngFor="let opt of statusOptions" [value]="opt">{{opt}}</option>
+        </select>
+      </div>
+      <div *ngIf="status==='休職'">
+        <div class="form-group">
+          <label>休職理由 <span class="required">*</span></label>
+          <select class="input" [(ngModel)]="leaveReason" required name="leaveReason_{{employeeNo}}">
+            <!-- 先頭の選択肢をデフォルトに -->
+            <option *ngFor="let opt of leaveReasonOptions" [value]="opt">{{opt}}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>休職開始日 <span class="required">*</span></label>
+          <input class="input" type="date" [(ngModel)]="leaveStart" required name="leaveStart_{{employeeNo}}" />
+        </div>
+        <div class="form-group">
+          <label>休職終了日 <span class="required">*</span></label>
+          <input class="input" type="date" [(ngModel)]="leaveEnd" required name="leaveEnd_{{employeeNo}}" />
+        </div>
+      </div>
+      <div class="form-group" *ngIf="status==='退職'" style="grid-column: 1 / span 2;">
+        <label>退社年月日 <span class="required">*</span></label>
+        <input class="input" type="date" [(ngModel)]="retirementDate" required name="retirementDate_{{employeeNo}}" />
+      </div>
+    </form>
+    <div class="error-message" *ngIf="errorMsg">{{errorMsg}}</div>
+    <div class="modal-actions">
+      <button class="main-btn" type="button" (click)="onSave()">保存</button>
+      <button class="cancel-btn" type="button" (click)="onCancel()">キャンセル</button>
+    </div>
+  </div>
+</div> 
